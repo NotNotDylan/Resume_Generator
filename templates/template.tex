@@ -1,0 +1,103 @@
+\documentclass[10pt,a4paper,withhyper]{altacv}
+\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
+\usepackage{paracol}
+\usepackage[most]{tcolorbox}
+
+\iftutex
+  \setmainfont{Roboto Slab}
+  \setsansfont{Lato}
+  \renewcommand{\familydefault}{\sfdefault}
+\else
+  \usepackage[rm]{roboto}
+  \usepackage[defaultsans]{lato}
+  \renewcommand{\familydefault}{\sfdefault}
+\fi
+
+\definecolor{SlateGrey}{HTML}{2E2E2E}
+\definecolor{LightGrey}{HTML}{666666}
+\definecolor{DarkPastelRed}{HTML}{450808}
+\definecolor{PastelRed}{HTML}{8F0D0D}
+\definecolor{GoldenEarth}{HTML}{E7D192}
+
+\colorlet{name}{black}
+\colorlet{tagline}{PastelRed}
+\colorlet{heading}{DarkPastelRed}
+\colorlet{headingrule}{GoldenEarth}
+\colorlet{subheading}{PastelRed}
+\colorlet{accent}{PastelRed}
+\colorlet{emphasis}{SlateGrey}
+\colorlet{body}{LightGrey}
+
+\renewcommand{\namefont}{\Huge\rmfamily\bfseries}
+\renewcommand{\personalinfofont}{\footnotesize}
+\renewcommand{\cvsectionfont}{\LARGE\rmfamily\bfseries}
+\renewcommand{\cvsubsectionfont}{\large\bfseries}
+\renewcommand{\cvItemMarker}{{\small\textbullet}}
+\renewcommand{\cvRatingMarker}{\faCircle}
+
+% Fixed visual shell for highlighted YouTube engineering role.
+\newcommand{\YouTubeRoleCard}[5]{%
+\begin{tcolorbox}[
+  colback=GoldenEarth!20,
+  colframe=PastelRed,
+  boxrule=0.6pt,
+  arc=1.8mm,
+  left=1mm,right=1mm,top=1mm,bottom=1mm
+]
+\cvevent{Product Development}{I did a thing (YouTube)}{#1}{17M+ Subscribers \textbar\ #2}
+\begin{itemize}
+  \item #3
+  \item #4
+  \item #5
+\end{itemize}
+\end{tcolorbox}
+}
+
+\begin{document}
+\name{Dylan Bitar}
+\tagline{Mechatronics Engineer $\cdot$ UTS \textbar\ {{TARGET_SPECIALISMS}}}
+\personalinfo{
+  \email{possibly.a.dylan@gmail.com}
+  \linkedin{dylan-bitar}
+  \github{your_github_id}
+  \location{Sydney, NSW, Australia}
+}
+
+\makecvheader
+\columnratio{0.6}
+\begin{paracol}{2}
+
+\cvsection{Profile}
+{{TAILORED_PROFILE}}
+
+\cvsection{Experience}
+\YouTubeRoleCard
+  { {{YOUTUBE_TIMELINE}} }
+  { {{YOUTUBE_OUTPUT_METRIC}} }
+  { {{YOUTUBE_BULLET_1}} }
+  { {{YOUTUBE_BULLET_2}} }
+  { {{YOUTUBE_BULLET_3}} }
+
+{{DYNAMIC_EXPERIENCE}}
+
+\cvsection{Projects}
+{{DYNAMIC_PROJECTS}}
+
+\switchcolumn
+
+\cvsection{Education}
+\cvevent{B.E. (Honours) Mechatronic Engineering}{University of Technology Sydney}{Jan 2024 -- Nov 2029}{}
+\smallskip
+WAM: 81.12 \textbar\ GPA: 5.92
+
+\cvsection{Relevant Coursework}
+{{TARGETED_COURSEWORK}}
+
+\cvsection{Technical Skills}
+{{TECHNICAL_SKILLS_TAGS}}
+
+\cvsection{Certifications}
+{{TARGETED_CERTIFICATIONS}}
+
+\end{paracol}
+\end{document}
