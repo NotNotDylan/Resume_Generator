@@ -11,7 +11,7 @@ from typing import Dict, List, Tuple
 
 from google import genai
 from google.genai import types
-from pydantic import BaseModel, ConfigDict, create_model
+from pydantic import BaseModel, create_model
 
 PLACEHOLDER_PATTERN = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
 
@@ -31,7 +31,20 @@ class RunConfig:
 
 
 class StrictModel(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    pass
+
+
+def resolve_cli_path(raw_path: str, base_dir: str | None = None) -> Path:
+    candidate = Path(raw_path)
+    if candidate.is_absolute():
+        return candidate.resolve()
+
+    direct = candidate.resolve()
+    if direct.exists() or base_dir is None:
+        return direct
+
+    fallback = (Path(base_dir) / candidate).resolve()
+    return fallback
 
 
 def parse_args() -> RunConfig:
@@ -91,12 +104,16 @@ def parse_args() -> RunConfig:
 
     args = parser.parse_args()
 
-    application_file = Path(args.application_file).resolve()
-    template_file = Path(args.template).resolve()
-    master_file = Path(args.master_data).resolve()
-    company_file = Path(args.company_research).resolve() if args.company_research else None
-    output_root = Path(args.output_dir).resolve()
-    api_key_file = Path(args.api_key_file).resolve()
+    application_file = resolve_cli_path(args.application_file, base_dir="applications")
+    template_file = resolve_cli_path(args.template)
+    master_file = resolve_cli_path(args.master_data)
+    company_file = (
+        resolve_cli_path(args.company_research, base_dir="applications")
+        if args.company_research
+        else None
+    )
+    output_root = resolve_cli_path(args.output_dir)
+    api_key_file = resolve_cli_path(args.api_key_file)
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     generated_run_name = f"{application_file.stem}_{timestamp}"
