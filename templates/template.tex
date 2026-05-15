@@ -1,15 +1,14 @@
 \documentclass[10pt,a4paper,withhyper]{altacv}
 \geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
 \usepackage{paracol}
-\usepackage[most]{tcolorbox}
 
 \iftutex
-  \setmainfont{Roboto Slab}
-  \setsansfont{Lato}
+  \setmainfont{TeX Gyre Termes}
+  \setsansfont{TeX Gyre Heros}
   \renewcommand{\familydefault}{\sfdefault}
 \else
-  \usepackage[rm]{roboto}
-  \usepackage[defaultsans]{lato}
+  \usepackage{tgtermes}
+  \usepackage{tgheros}
   \renewcommand{\familydefault}{\sfdefault}
 \fi
 
@@ -35,7 +34,6 @@
 \renewcommand{\cvItemMarker}{{\small\textbullet}}
 \renewcommand{\cvRatingMarker}{\faCircle}
 
-% Fixed visual shell for highlighted YouTube engineering role.
 \newcommand{\YouTubeRoleCard}[5]{%
 \begin{tcolorbox}[
   colback=GoldenEarth!20,
@@ -54,14 +52,15 @@
 }
 
 \begin{document}
-\name{Dylan Bitar}
-\tagline{Mechatronics Engineer $\cdot$ UTS \textbar\ {{TARGET_SPECIALISMS}}}
+\name{{{FULL_NAME}}}
+\tagline{Mechatronics Engineer $\cdot$ UTS \textbar\ {{{TARGET_SPECIALISMS}}}}
 \personalinfo{
-  \email{possibly.a.dylan@gmail.com}
-  \linkedin{dylan-bitar}
-  \github{your_github_id}
-  \location{Sydney, NSW, Australia}
+  \email{{{EMAIL_ADDRESS}}}
+  \linkedin{{{LINKEDIN_URL}}}
+  \github{{{GITHUB_URL}}}
+  \location{{{LOCATION}}}
 }
+{{PROFILE_PHOTO_BLOCK}}
 
 \makecvheader
 \columnratio{0.6}
@@ -98,6 +97,8 @@ WAM: 81.12 \textbar\ GPA: 5.92
 
 \cvsection{Certifications}
 {{TARGETED_CERTIFICATIONS}}
+
+{{PORTFOLIO_NOTE}}
 
 \end{paracol}
 \end{document}

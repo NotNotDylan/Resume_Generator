@@ -1,197 +1,199 @@
-# Master Portfolio Data Template
+# Dylan Resume Master Portfolio
 
-Use this file as the single source of truth for static profile data.
-Keep claims evidence-based and include metrics where possible.
+Use this file as the source of truth for tailoring. Keep the structure stable.
 
-## Person
-- Full Name: Dylan Bitar
-- Pronouns: he/him
-- Location: Sydney, NSW, Australia
-- Email: possibly.a.dylan@gmail.com
-- LinkedIn: linkedin.com/in/dylan-bitar
-- GitHub: github.com/your_github_id
-- University: University of Technology Sydney
-- Degree: B.E. (Honours) Mechatronic Engineering
-- Expected Graduation: Nov 2029
+## Section A — Personal Information
+Name: Dylan Bitar
+Pronouns: he/him
+Location: Sydney, NSW, Australia
+Email: possibly.a.dylan@gmail.com
+LinkedIn: https://linkedin.com/in/dylan-bitar
+GitHub: https://github.com/your_github_id
+University: University of Technology Sydney
+Degree: Bachelor of Engineering (Honours)
+Major: Mechatronic Engineering
+Expected Graduation: Nov 2029
 
-## Role Identity Baseline
-- Engineering Identity: Mechatronics Engineer focused on rapid hardware-software prototyping.
-- Core Domains:
-  - Embedded systems
-  - Robotics and control
-  - Product prototyping and manufacturing
-- Preferred Role Types:
-  - Internship (engineering)
-  - Mechatronics / robotics / embedded systems
+## Section B — Education and Transcript
+Program: C09067 Bachelor of Engineering (Honours) Diploma in Professional Engineering Practice
+Status: Active
+Major: Mechatronic Engineering
+Total Credit Points Gained: 105
+GPA: 5.92
+WAM: 81.12
+Instruction: When selecting relevant coursework for a resume, prioritize subjects that are both role-relevant and among the strongest marks shown below.
 
-## Standard Metrics
-- GPA: 5.92
-- WAM: 81.12
-- Total Credit Points: 105
-- YouTube Product Projects Completed: 10
-- YouTube Product Projects Published: 4
-- Typical Project Build Time: ~30 hours per project
+### Completed Subjects
+- Programming 1 — High Distinction, 92
+- Introduction to Engineering Projects — High Distinction, 85
+- Physical Modelling — Distinction, 82
+- Mathematics 2 — Distinction, 82
+- Sensors and Control for Mechatronic Systems — Distinction, 82
+- Mathematics 1 — Distinction, 78
+- Engineering Project Appraisal — Distinction, 76
+- Designing Sustainable Engineering Projects — Credit, 72
+- Introduction to Mechanical Engineering — High Distinction
+- Introduction to Mechatronics Engineering — High Distinction
+- Materials and Manufacturing Engineering A — Distinction
+- Embedded Mechatronics Systems — High Distinction
+- Special Course A (4cp) — High Distinction
+- Industrial Robotics — Distinction
+- Professional Practice Preparation 1 — Pass (not graded)
+- Global Mobility A — Pass (not graded)
+- Machines and Mechanisms A — Pass
+- Mechanical Design Fundamentals Studio 1 — Pass
+- Applied Mechanics and Design A — Pass
 
-## Education
-### University of Technology Sydney
-- Program: C09067 Bachelor of Engineering (Honours) Diploma in Professional Engineering Practice
-- Major: Mechatronic Engineering
-- Dates: Jan 2024 - Nov 2029
-- Transcript Highlights:
-  - 41039 Programming 1: HD 92
-  - 33130 Mathematics 1: D 78
-  - 33230 Mathematics 2: D 82
-  - 41200 Engineering Project Appraisal: D 76
-  - 41201 Designing Sustainable Engineering Projects: C 72
-  - 41014 Sensors and Control for Mechatronic Systems: D 82
+## Section C — Personal Experience Catalogue
 
-### Currently Enrolled Subjects
-- 41302 Additive Manufacturing 1
-- 41058 Dynamic Systems and Control A
-- 41070 Embedded Mechatronics Studio
-- 41012 Programming for Mechatronic Systems
-- 41202 Professional Engineering Communication
-- 41068 Robotics Studio 1
+### Product Development
+**I did a thing, YouTube · Part-time**
+May 2025 - Present
+- Rapid minimum viable product development on short timelines for filmed engineering builds.
+- Typical project lifecycle includes ideation, design, sourcing, fabrication, prototyping, and iteration.
+- Average working time is roughly 30 hours per project from concept to camera-ready outcome.
+- Published projects and unreleased builds demonstrate fast execution under ambiguity.
 
-## Professional Experience Catalog
+### Casual Academic
+**University of Technology Sydney · Contract**
+Feb 2025 - Present
+- Tutored students in Introduction to Mechatronics Engineering.
+- Reinforced technical communication, systems explanation, and first-principles teaching.
 
-### Product Development - I did a thing (YouTube)
-- Dates: May 2025 - Present
-- Employment Type: Part-time
-- Scope:
-  - Rapid MVP development for filmed engineering builds.
-  - End-to-end pipeline from ideation to prototype iteration.
-- Impact Metrics:
-  - 10 completed projects, 4 published projects.
-  - Average 30 working hours per project.
-- Evidence Bullets:
-  - Delivered unconventional mechanical/electromechanical builds under production deadlines.
-  - Integrated design, sourcing, fabrication, and reliability iteration for repeated filming takes.
-  - Demonstrated high autonomy in selecting architecture and implementation strategy.
-
-### UTS Casual Academic - University of Technology Sydney
-- Dates: Feb 2025 - Present
-- Scope: Tutoring in 41099 Introduction to Mechatronics Engineering.
-- Evidence Bullets:
-  - Explained foundational mechatronics concepts to diverse student cohorts.
-  - Reinforced technical communication and systems thinking.
-
-### Embedded Engineer - UTS Motorsports Autonomous
-- Dates: Apr 2024 - Aug 2025
-- Scope:
-  - Embedded C and STM32-focused development.
-  - Team-based systems integration.
-- Evidence Bullets:
-  - Built practical firmware skills in constrained embedded environments.
-  - Collaborated on multi-disciplinary engineering deliverables.
+### Embedded Engineering
+**UTS Motorsports Autonomous**
+Apr 2024 - Aug 2025
+- Embedded engineering work with STM32 and embedded C.
+- Exposure to team-based systems integration in a motorsports environment.
 
 ### Leadership and Outreach
-- UTS Aerial Society, Vice President (Jun 2024 - Nov 2025)
-- Engineers Without Borders UTS, General Committee Member (Mar 2024 - Oct 2024)
-- EWB Volunteer Outreach (Wagga Wagga STEM delivery, Jun 2024)
+**UTS Aerial Society · Vice President**
+Jun 2024 - Nov 2025
+- Supported the establishment and operation of a new society.
 
-## Project Catalog
+**Engineers Without Borders UTS Chapter · General Committee Member**
+Mar 2024 - Oct 2024
+- Helped organize youth outreach events and logistics.
 
-### Professional Projects - I did a thing
+**Engineers Without Borders UTS Chapter · Volunteer**
+Jun 2024
+- Delivered STEM activities to regional school students in Wagga Wagga.
 
-#### CO2 Spear
-- Context: Professional build for YouTube production.
-- Technologies and Tools: 3D printing, impact-resistant mechanical design.
-- What Was Built: Spear mechanism intended to rupture/explode on impact.
-- Problem Solved: Achieved robustness under extreme impact loads.
-- Measurable Outcomes: Published.
-- Public: Yes
+## Section D — Project Portfolio
+# Dylan's Engineering Project Portfolio
 
-#### Oscillating Shower Head
-- Context: Professional build for YouTube production.
-- Technologies and Tools: 3D CAD, fluid routing, valve and pressure experimentation.
-- What Was Built: Shower head oscillating between 0 and 60 degrees at ~0.5s cadence.
-- Problem Solved: Repeated dynamic fluid angle switching with practical reliability.
-- Measurable Outcomes: Published.
-- Public: Yes
+## Professional Projects: "I Did A Thing" YouTube Channel
+**Overview:** 17 Total Projects | 10 Completed | 4 Published
 
-#### Dowel-Shooting Circular Saw
-- Context: Professional build for YouTube production.
-- Technologies and Tools: Mechanical modification, safety-focused prototyping.
-- What Was Built: Circular saw adapted to launch wooden dowels.
-- Problem Solved: Extended commercial tool capability beyond original design intent.
-- Measurable Outcomes: Published.
-- Public: Yes
+1. **CO2 Spear (Published)**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** A spear designed to explode on impact.
+   * **Technical Details:** Focused on designing 3D-printed components capable of withstanding extreme, high-impact forces.
 
-#### CO2 Canister Nerf Gun
-- Context: Professional build for YouTube production.
-- Technologies and Tools: Full internal redesign, constrained package integration.
-- What Was Built: Nerf blaster converted to launch CO2 canisters while retaining stock exterior.
-- Problem Solved: Reliable puncture and launch within tight space constraints.
-- Measurable Outcomes: Published.
-- Public: Yes
+2. **Oscillating Shower Head (Published)**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** A custom shower head that rapidly changes angle between 0 and 60 degrees every half second.
+   * **Technical Details:** Designed complex internal pipes and structures within 3D prints, gaining practical experience with fluid dynamics and valves under pressure.
 
-### Academic Projects - UTS Mechatronics
+3. **Dowel-Shooting Circular Saw (Published)**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** Adapted a standard, off-the-shelf circular saw to shoot wooden dowels.
+   * **Technical Details:** Successfully engineered modifications to accomplish stretch goals far beyond the tool's original intended use.
 
-#### Custom PCB Step Tracker (Embedded Mechatronics Studio)
-- Context: Coursework studio project.
-- Technologies and Tools: Altium, STM32, OLED, ToF sensor, USB-C, battery charging circuitry, 0402 assembly.
-- What Was Built: Advanced custom board beyond subject baseline requirements.
-- Problem Solved: Demonstrated integrated hardware, firmware, and manufacturability optimization.
-- Measurable Outcomes: Subject extension project.
-- Public: No
+4. **Remote/Step-Activated Taser Shoes**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** Shoes equipped to taser the wearer either with every step or via remote control.
+   * **Technical Details:** Successfully fitted microcontrollers and a high-voltage flyback circuit within the slim profile of a shoe without noticeably impacting wearer comfort.
 
-#### 6-DOF Robotic Arm Simulation and Control (Industrial Robotics)
-- Context: Coursework project.
-- Technologies and Tools: Python, Robotics Toolbox, IK, trajectory planning, sensing algorithms.
-- What Was Built: Multi-arm simulation and software control framework.
-- Problem Solved: Practical application of robotic kinematics and planning.
-- Measurable Outcomes: Successfully simulated and controlled three 6-DOF arms.
-- Public: No
+5. **Decapitating Rocking Chair**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** A rocking chair designed to "decapitate" anything that sits in it.
+   * **Technical Details:** Worked from highly vague instructions to transform cheap, everyday items into a terrifying functional mechanism with relative ease.
 
-#### Monolithic Print-in-Place Pliers (Additive Manufacturing)
-- Context: Coursework project.
-- Technologies and Tools: Fusion 360, FEA, generative design, topology optimization, PLA fabrication.
-- What Was Built: 25g print-in-place pliers optimized for strength.
-- Problem Solved: Maximized grip performance under strict mass/manufacturing constraints.
-- Measurable Outcomes: Met assignment constraints.
-- Public: No
+6. **Air-Powered Arrow Launcher**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** A high-pressure pneumatic cannon designed to fire arrows.
+   * **Technical Details:** Learned extensively about the tolerancing of 3D-printed parts to create accurate, elongated barrels capable of safely withstanding high pneumatic pressure.
 
-#### Double Pendulum on a Cart (Intro to Mechatronics)
-- Context: Coursework foundational project.
-- Technologies and Tools: PID control, stepper actuation, Fusion 360, custom GUI.
-- What Was Built: Mechanical-electrical system targeting inverted pendulum balancing.
-- Problem Solved: Achieved stable single-pendulum control while developing control intuition.
-- Measurable Outcomes: Functional prototype.
-- Public: No
+7. **Jumping Trampoline**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** A trampoline engineered to mechanically jump.
+   * **Technical Details:** Because standard pneumatics exceeded the project budget, I designed and fabricated custom, highly efficient pneumatic cylinders using inexpensive hardware sourced from Bunnings.
 
-## Technical Skills Inventory
-- Embedded and Electronics: Embedded C, STM32, PCB design, sensor integration.
-- Robotics and Control: Kinematics, inverse kinematics, PID control, trajectory planning.
-- Mechanical and CAD: Fusion 360, SolidWorks, additive manufacturing workflows.
-- Software: Python, C, data handling and simulation scripting.
-- Collaboration: Technical tutoring, committee leadership, outreach communication.
+8. **CO2 Canister Nerf Gun (Published)**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** Modified a standard Nerf gun to fire CO2 canisters instead of foam darts.
+   * **Technical Details:** Conducted a complete internal redesign of the off-the-shelf product. Replaced numerous internal components to create a reliable puncture and launch system within the tight confines of the casing, while strictly maintaining the unmodified exterior look for the camera.
 
-## Certifications and Licenses
-- Microsoft Certified: Azure AI Fundamentals (Jul 2024)
-- C Programming for Embedded Applications (LinkedIn, Jul 2024)
-- Working with Children Check (Apr 2024 - Apr 2029)
-- First Aid (Feb 2024 - Feb 2027)
-- General Boat Driving Licence (Jan 2023 - Jan 2026)
-- Work Zone Temporary Traffic Control Technician (Feb 2024)
-- General Construction Induction Card (Feb 2024)
+9. **Toilet Air-Breathing Apparatus**
+   * **Context:** Professional project for YouTube production.
+   * **Description:** Recreated an obscure patent that allows a person to breathe air from a toilet plumbing system in the event of a building fire.
+   * **Technical Details:** A rapid-prototyping exercise completed entirely within a couple of hours.
 
-## Awards
+10. **Wearable Sail Flotation Device**
+    * **Context:** Professional project for YouTube production.
+    * **Description:** A wearable flotation device featuring an attached sail to provide maneuverability in the water.
+    * **Technical Details:** Took a very vague concept from an existing patent and successfully designed a large, functional, and safe wearable item.
+
+---
+
+## Academic Projects: Mechatronics Engineering (UTS)
+
+### Advanced & Specialized Studios
+**Embedded Mechatronics Studio**
+* **Project:** Custom PCB Step Tracker
+* **Context:** Coursework project.
+* **Technical Details:** Used Altium Designer to create the board. I bypassed the standard subject requirements (an Arduino shield) to integrate an STM32 microcontroller and added several advanced features for personal learning:
+  * Integrated a heart rate monitor and an OLED screen.
+  * Added a Time of Flight (ToF) distance sensor, mounted on a secondary board soldered perpendicularly to the main PCB.
+  * Implemented battery recharging circuitry and USB-C for both power and software debugging communication.
+  * Designed a 4th-order Butterworth filter utilizing strictly C0G/NP0 components for the analog accelerometer.
+  * Optimized for a minimal footprint by routing and utilizing 0402 SMD components, which I successfully stenciled and hand-soldered.
+
+**Additive Manufacturing**
+* **Project:** Monolithic Print-in-Place Pliers
+* **Context:** Coursework project.
+* **Technical Details:** Tasked with using exactly 25g of PLA plastic to manufacture pliers optimized to grip a 20x20x20mm cube with maximum strength. Utilized Finite Element Analysis (FEA), generative design, and topological optimization in Fusion 360 to achieve the strongest and lightest design possible within a single, print-in-place monolith.
+
+* **Project:** Toy Photogrammetry Recreation
+* **Context:** Coursework project.
+* **Technical Details:** Used photogrammetry to scan real-world toys, repaired and cleaned the mesh in Blender, then used SolidWorks to cut the toy into a puzzle of interlocking parts that could be 3D printed.
+
+**Industrial Robotics**
+* **Project:** 6-DOF Robotic Arm Simulation & Control
+* **Context:** Coursework project.
+* **Technical Details:** Developed software in Python utilizing the Robotics Toolbox to simulate and control three separate 6-DOF robotic arms. Applied kinematics, inverse kinematics, trajectory and path planning, and object sensing algorithms.
+
+### Foundational & Intermediate Studios
+**Mechanical Design Studio Fundamentals (2025)**
+* **Project:** Warman Challenge 2025
+* **Context:** Coursework project.
+* **Technical Details:** Designed and modeled mechatronic systems in SolidWorks. Hardware integration included stepper motors, servos, and an STM32 Nucleo microcontroller.
+
+**Materials and Manufacturing**
+* **Project:** Vertical Wind Turbine
+* **Context:** Coursework project.
+* **Technical Details:** Designed customized aerofoils and utilized laser-cut balsa wood to manufacture a functional vertical-axis wind turbine.
+
+**Introduction to Mechatronics Engineering (2024)**
+* **Project:** Double Pendulum on a Cart
+* **Context:** Coursework project.
+* **Technical Details:** My first major engineering project. Attempted to balance a double inverted pendulum; successfully achieved stable balance for a single pendulum. Implemented PID control, stepper motor actuation, mechanical design in Fusion 360, and a custom GUI for operation.
+
+**Introduction to Mechanical Engineering**
+* **Project:** Precision Catapult
+* **Context:** Coursework project.
+* **Technical Details:** Built a catapult using strictly minimal materials, engineered specifically for a short but highly accurate and repeatable firing range.
+
+## Section E — Certifications and Licences
+- Microsoft Certified: Azure AI Fundamentals
+- C Programming for Embedded Applications
+- Working with Children Check
+- First Aid
+- General Boat Driving Licence
+- Work Zone Temporary Traffic Control Technician
+- General Construction Induction Card
+
+## Section F — Awards
 - Dean's List Award
-- First in Engineering Studies (Sydney Catholic Schools)
-
-## Reusable Evidence Snippets
-- Fast delivery under ambiguity: Converts vague ideas into durable prototypes on short deadlines.
-- Cross-domain execution: Combines mechanical, embedded, and control skills in single builds.
-- Communication: Tutors engineering content and delivers outreach to non-technical audiences.
-
-## Maintenance Rules
-- Keep dates in `Mon YYYY` format.
-- Keep measurable outcomes numeric where possible.
-- Keep each project entry complete with all six fields:
-  - Context
-  - Technologies and Tools
-  - What Was Built
-  - Problem Solved
-  - Measurable Outcomes
-  - Public
+- First in Engineering Studies, Sydney Catholic Schools

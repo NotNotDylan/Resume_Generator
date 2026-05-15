@@ -10,7 +10,7 @@
 - Evidence of practical build experience.
 - Fast iteration, clear communication, and safety mindset.
 
-## Resume tailoring inputs
+## Resume Tailoring Inputs
 - Suggested accent color: #0B6E70
 - Suggested soft tint: #E6F4F4
 - Key emphasis: embedded systems + mechatronic integration

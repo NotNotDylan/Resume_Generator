@@ -1,135 +1,149 @@
-import argparse
 import json
 import os
 import re
 import shutil
 import subprocess
+import time
 from dataclasses import dataclass
-from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Sequence, cast
 
 from google import genai
+from google.genai import errors as genai_errors
 from google.genai import types
 from pydantic import BaseModel, create_model
 
 PLACEHOLDER_PATTERN = re.compile(r"\{\{([A-Z0-9_]+)\}\}")
+OUTPUT_DIR_PATTERN = re.compile(r"^(?P<batch>\d{2})-(?P<index>\d{2}) (?P<name>.+)$")
+ARCHIVE_VERSION_PATTERN = re.compile(r" V(?P<version>\d+)(?=\.[^.]+$)")
+IGNORED_APPLICATION_DIRS = {"archive", "unstaged", "template", "company_name - job_name"}
+DEFAULT_ARCHIVE_README = "# Application Hold Folder\n\nThis folder is intentionally ignored by the batch resume generator.\nMove application folders here when you do not want them processed in the current run.\nUse it for completed applications, parked applications, or anything you want kept out of the active generation queue.\n"
+DEFAULT_JOB_TEMPLATE_README = "# COMPANY_NAME - JOB_NAME\n\nUse this folder as your starter application template.\nKeep the folder name format as COMPANY_NAME - JOB_NAME for clean output naming.\nAdd your role details to job_description.md and company research notes to company_research.md.\n"
 
 
 @dataclass
-class RunConfig:
-    application_file: Path
-    template_file: Path
+class GeneratorSettings:
+    applications_root: Path
+    outputs_root: Path
+    templates_root: Path
+    selected_template_name: str
     master_portfolio_file: Path
-    company_research_file: Path | None
-    output_root: Path
-    run_name: str
-    compiler: str
-    model_name: str
-    no_compile: bool
     api_key_file: Path
+    model_name: str = "gemini-2.5-flash"
+    research_model_name: str = "gemini-2.5-flash"
+    compile_pdf: bool = False
+    compiler: str = "xelatex"
+    enable_company_research_search: bool = False
+    api_call_delay_seconds: float = 4.0
+    auto_install_latex_on_windows: bool = True
+    resume_title: str = "Dylan's Resume"
+    profile_photo_file: Path | None = None
 
 
-class StrictModel(BaseModel):
+@dataclass
+class JobSpec:
+    job_name: str
+    company_name: str
+    role_hint: str
+    folder: Path
+    job_description_file: Path
+    company_research_file: Path
+    manual_sections_file: Path | None
+
+
+@dataclass
+class OutputFolderRecord:
+    logical_name: str
+    path: Path
+    batch: int
+    index: int
+
+
+class ResumeSections(BaseModel):
     pass
 
 
-def resolve_cli_path(raw_path: str, base_dir: str | None = None) -> Path:
-    candidate = Path(raw_path)
-    if candidate.is_absolute():
-        return candidate.resolve()
+class ApiRateLimiter:
+    def __init__(self, delay_seconds: float) -> None:
+        self.delay_seconds = max(0.0, delay_seconds)
+        self._last_call_time = 0.0
 
-    direct = candidate.resolve()
-    if direct.exists() or base_dir is None:
-        return direct
+    def wait(self) -> None:
+        if self.delay_seconds <= 0:
+            return
+        elapsed = time.monotonic() - self._last_call_time
+        if elapsed < self.delay_seconds:
+            time.sleep(self.delay_seconds - elapsed)
 
-    fallback = (Path(base_dir) / candidate).resolve()
-    return fallback
+    def mark(self) -> None:
+        self._last_call_time = time.monotonic()
 
 
-def parse_args() -> RunConfig:
-    parser = argparse.ArgumentParser(
-        description="Generate a tailored LaTeX resume using Gemini structured outputs."
-    )
-    parser.add_argument(
-        "application_file",
-        help="Path to the target application text file under applications/.",
-    )
-    parser.add_argument(
-        "--template",
-        default="templates/template.tex",
-        help="Path to a LaTeX template containing {{PLACEHOLDER}} tokens.",
-    )
-    parser.add_argument(
-        "--master-data",
-        default="data/master_portfolio.md",
-        help="Path to the static portfolio data markdown file.",
-    )
-    parser.add_argument(
-        "--company-research",
-        default=None,
-        help="Optional path to manual company research notes.",
-    )
-    parser.add_argument(
-        "--output-dir",
-        default="outputs",
-        help="Directory where per-run output folders are created.",
-    )
-    parser.add_argument(
-        "--run-name",
-        default=None,
-        help="Optional run name. If omitted, one is generated from timestamp and application file stem.",
-    )
-    parser.add_argument(
-        "--compiler",
-        default="xelatex",
-        choices=["xelatex", "pdflatex"],
-        help="LaTeX compiler to use for PDF build.",
-    )
-    parser.add_argument(
-        "--model",
-        default="gemini-2.5-flash",
-        help="Google model name to use.",
-    )
-    parser.add_argument(
-        "--no-compile",
-        action="store_true",
-        help="Skip LaTeX compilation and only write resume.tex + sections.json.",
-    )
-    parser.add_argument(
-        "--api-key-file",
-        default="secrets/gemini_api_key.txt",
-        help="Local file containing your Gemini API key on one line (ignored by git by default).",
-    )
+def extract_retry_delay_seconds(error_message: str, default_seconds: float = 10.0) -> float:
+    retry_in_match = re.search(r"retry in\s+([0-9]+(?:\.[0-9]+)?)s", error_message, flags=re.IGNORECASE)
+    if retry_in_match:
+        return max(1.0, float(retry_in_match.group(1)))
+    retry_delay_match = re.search(r"'retryDelay':\s*'([0-9]+(?:\.[0-9]+)?)s'", error_message)
+    if retry_delay_match:
+        return max(1.0, float(retry_delay_match.group(1)))
+    return default_seconds
 
-    args = parser.parse_args()
 
-    application_file = resolve_cli_path(args.application_file, base_dir="applications")
-    template_file = resolve_cli_path(args.template)
-    master_file = resolve_cli_path(args.master_data)
-    company_file = (
-        resolve_cli_path(args.company_research, base_dir="applications")
-        if args.company_research
-        else None
-    )
-    output_root = resolve_cli_path(args.output_dir)
-    api_key_file = resolve_cli_path(args.api_key_file)
+def format_api_error(model_name: str, exc: Exception) -> RuntimeError:
+    status_code = getattr(exc, "status_code", None)
+    message = str(exc)
+    lowered = message.lower()
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    generated_run_name = f"{application_file.stem}_{timestamp}"
+    if status_code == 429 or "resource_exhausted" in lowered or "quota" in lowered:
+        return RuntimeError(
+            "Gemini API quota/rate limit reached for "
+            f"'{model_name}'. Wait for the suggested retry window, reduce request volume, "
+            "or switch to a model/project with higher quota. "
+            "Docs: https://ai.google.dev/gemini-api/docs/rate-limits"
+        )
 
-    return RunConfig(
-        application_file=application_file,
-        template_file=template_file,
-        master_portfolio_file=master_file,
-        company_research_file=company_file,
-        output_root=output_root,
-        run_name=args.run_name or generated_run_name,
-        compiler=args.compiler,
-        model_name=args.model,
-        no_compile=args.no_compile,
-        api_key_file=api_key_file,
-    )
+    if status_code in {500, 502, 503, 504} or "unavailable" in lowered:
+        return RuntimeError(
+            "Gemini API is temporarily unavailable. Please retry shortly. "
+            f"Original error: {message}"
+        )
+
+    return RuntimeError(f"Gemini API request failed for model '{model_name}': {message}")
+
+
+def generate_content_with_retry(
+    client: genai.Client,
+    model_name: str,
+    contents: str,
+    config: types.GenerateContentConfig,
+    rate_limiter: ApiRateLimiter,
+    max_attempts: int = 3,
+) -> types.GenerateContentResponse:
+    for attempt in range(1, max_attempts + 1):
+        rate_limiter.wait()
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=contents,
+                config=config,
+            )
+            rate_limiter.mark()
+            return response
+        except genai_errors.APIError as exc:
+            rate_limiter.mark()
+            status_code = getattr(exc, "status_code", None)
+            retryable = status_code in {429, 500, 502, 503, 504}
+            if retryable and attempt < max_attempts:
+                delay = extract_retry_delay_seconds(str(exc))
+                print(
+                    f"Warning: Gemini API error (status {status_code}) on attempt {attempt}/{max_attempts}. "
+                    f"Retrying in {delay:.1f}s..."
+                )
+                time.sleep(delay)
+                continue
+            raise format_api_error(model_name, exc) from exc
+
+    raise RuntimeError(f"Gemini API request failed after {max_attempts} attempts for model '{model_name}'.")
 
 
 def read_text(path: Path) -> str:
@@ -138,16 +152,23 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def write_text(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+def write_json(path: Path, data: Dict[str, str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
 def read_api_key_from_file(path: Path) -> str:
     if not path.exists():
         return ""
-
-    raw = read_text(path)
-    for line in raw.splitlines():
+    for line in read_text(path).splitlines():
         candidate = line.strip()
-        if not candidate or candidate.startswith("#"):
-            continue
-        return candidate
+        if candidate and not candidate.startswith("#"):
+            return candidate
     return ""
 
 
@@ -155,256 +176,627 @@ def resolve_api_key(api_key_file: Path) -> str:
     env_key = os.getenv("GEMINI_API_KEY", "").strip()
     if env_key:
         return env_key
-
     file_key = read_api_key_from_file(api_key_file)
     if file_key and "PASTE" not in file_key:
         print(f"GEMINI_API_KEY loaded from local file: {api_key_file}")
         return file_key
-
     raise RuntimeError(
         "No Gemini API key found. Set GEMINI_API_KEY in your terminal or create "
         f"{api_key_file} with your raw API key on one line."
     )
 
 
-def ensure_applications_path(path: Path) -> None:
-    expected_parent = Path("applications").resolve()
-    try:
-        path.relative_to(expected_parent)
-    except ValueError as exc:
-        raise ValueError(
-            f"application_file must be under {expected_parent}, got: {path}"
-        ) from exc
+def ensure_supporting_structure(settings: GeneratorSettings) -> None:
+    template_job_dir = settings.applications_root / "COMPANY_NAME - JOB_NAME"
+    write_text(template_job_dir / "README.md", DEFAULT_JOB_TEMPLATE_README)
+    write_text(template_job_dir / "job_description.md", "")
+    write_text(template_job_dir / "company_research.md", "")
+    write_text(settings.applications_root / "ARCHIVE" / "README.md", DEFAULT_ARCHIVE_README)
+    write_text(settings.applications_root / "UNSTAGED" / "README.md", DEFAULT_ARCHIVE_README)
+    if settings.profile_photo_file is not None:
+        write_text(settings.profile_photo_file.parent / ".gitkeep", "")
+
+
+def parse_job_name(folder_name: str) -> tuple[str, str]:
+    parts = [part.strip() for part in folder_name.split(" - ", 1)]
+    if len(parts) == 2:
+        return parts[0], parts[1]
+    return folder_name.strip(), ""
+
+
+def discover_jobs(applications_root: Path) -> List[JobSpec]:
+    jobs: List[JobSpec] = []
+    for current_root, dirs, _ in os.walk(applications_root, topdown=True):
+        dirs[:] = [directory for directory in dirs if directory.lower() not in IGNORED_APPLICATION_DIRS]
+        current_dir = Path(current_root)
+        if current_dir == applications_root:
+            continue
+
+        job_description_file = current_dir / "job_description.md"
+        if not job_description_file.exists():
+            continue
+
+        company_name, role_hint = parse_job_name(current_dir.name)
+        manual_override = None
+        for candidate in (current_dir / "sections_override.json", current_dir / "sections.json"):
+            if candidate.exists():
+                manual_override = candidate
+                break
+
+        jobs.append(
+            JobSpec(
+                job_name=current_dir.name,
+                company_name=company_name,
+                role_hint=role_hint,
+                folder=current_dir,
+                job_description_file=job_description_file,
+                company_research_file=current_dir / "company_research.md",
+                manual_sections_file=manual_override,
+            )
+        )
+    jobs.sort(key=lambda item: item.job_name.lower())
+    return jobs
 
 
 def extract_placeholders(template_text: str) -> List[str]:
-    found = PLACEHOLDER_PATTERN.findall(template_text)
-    unique_sorted = sorted(set(found))
-    if not unique_sorted:
+    placeholders = sorted(set(PLACEHOLDER_PATTERN.findall(template_text)))
+    if not placeholders:
         raise ValueError("No placeholders found. Add tokens like {{TAILORED_PROFILE}}.")
-    return unique_sorted
+    return placeholders
 
 
-def build_schema_model(placeholders: List[str]) -> type[BaseModel]:
+def build_schema_model(placeholders: Sequence[str]) -> type[BaseModel]:
     fields = {name: (str, ...) for name in placeholders}
-    return create_model("ResumeSections", __base__=StrictModel, **fields)
+    return cast(type[BaseModel], create_model("ResumeSections", __base__=ResumeSections, **fields))
 
 
-def build_prompt(
-    placeholders: List[str],
+def sanitize_model_output(value: str) -> str:
+    cleaned = value.strip()
+    cleaned = cleaned.replace("```latex", "").replace("```", "").strip()
+    cleaned = cleaned.replace("\\n", "\n")
+    return cleaned
+
+
+def render_template(template_text: str, values: Dict[str, str]) -> str:
+    rendered = template_text
+    for key, value in values.items():
+        rendered = rendered.replace(f"{{{{{key}}}}}", sanitize_model_output(value))
+    return rendered
+
+
+def validate_key_parity(placeholders: Sequence[str], model_data: Dict[str, str]) -> None:
+    expected = set(placeholders)
+    actual = set(model_data.keys())
+    missing = sorted(expected - actual)
+    extra = sorted(actual - expected)
+    if missing or extra:
+        message = ["Placeholder/schema mismatch detected."]
+        if missing:
+            message.append(f"Missing keys: {', '.join(missing)}")
+        if extra:
+            message.append(f"Unexpected keys: {', '.join(extra)}")
+        raise ValueError("\n".join(message))
+
+
+def load_manual_sections(path: Path) -> Dict[str, str]:
+    data = json.loads(read_text(path))
+    if not isinstance(data, dict):
+        raise ValueError(f"Manual sections file must contain a JSON object: {path}")
+    normalized: Dict[str, str] = {}
+    for key, value in data.items():
+        if not isinstance(key, str) or not isinstance(value, str):
+            raise ValueError(f"Manual sections file must contain string keys and string values: {path}")
+        normalized[key] = value
+    return normalized
+
+
+def run_compile(compiler: str, tex_file: Path, working_dir: Path) -> tuple[int, str, str]:
+    completed = subprocess.run(
+        [compiler, "-interaction=nonstopmode", "-halt-on-error", tex_file.name],
+        cwd=working_dir,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return completed.returncode, completed.stdout, completed.stderr
+
+
+def _candidate_compiler_paths() -> List[Path]:
+    candidates: List[Path] = []
+    if os.name != "nt":
+        return candidates
+
+    local_app_data = os.environ.get("LOCALAPPDATA", "")
+    program_files = os.environ.get("ProgramFiles", "")
+    program_files_x86 = os.environ.get("ProgramFiles(x86)", "")
+
+    roots = [
+        Path(local_app_data) / "Programs" / "MiKTeX" / "miktex" / "bin" / "x64",
+        Path(local_app_data) / "Programs" / "MiKTeX" / "miktex" / "bin",
+        Path(program_files) / "MiKTeX" / "miktex" / "bin" / "x64",
+        Path(program_files) / "MiKTeX" / "miktex" / "bin",
+        Path(program_files_x86) / "MiKTeX" / "miktex" / "bin",
+    ]
+
+    for root in roots:
+        if root and root.exists():
+            candidates.append(root / "xelatex.exe")
+            candidates.append(root / "pdflatex.exe")
+
+    return candidates
+
+
+def resolve_available_compiler(preferred: str) -> str | None:
+    candidates = [preferred]
+    for fallback in ("xelatex", "pdflatex"):
+        if fallback not in candidates:
+            candidates.append(fallback)
+
+    for candidate in candidates:
+        resolved = shutil.which(candidate)
+        if resolved is not None:
+            return resolved
+
+    for candidate_path in _candidate_compiler_paths():
+        if candidate_path.exists():
+            return str(candidate_path)
+
+    return None
+
+
+def try_install_latex_windows() -> bool:
+    if os.name != "nt":
+        return False
+    if shutil.which("winget") is None:
+        return False
+
+    command = [
+        "winget",
+        "install",
+        "--id",
+        "MiKTeX.MiKTeX",
+        "-e",
+        "--source",
+        "winget",
+        "--accept-package-agreements",
+        "--accept-source-agreements",
+    ]
+
+    try:
+        completed = subprocess.run(command, capture_output=True, text=True, check=False)
+    except OSError:
+        return False
+
+    success_codes = {0}
+    return completed.returncode in success_codes
+
+
+def extract_field(master_data: str, label: str) -> str:
+    pattern = re.compile(rf"^\s*-?\s*{re.escape(label)}:\s*(.+)$", re.MULTILINE)
+    match = pattern.search(master_data)
+    return match.group(1).strip() if match else ""
+
+
+def safe_filename(name: str) -> str:
+    invalid = '<>:"/\\|?*'
+    cleaned = ''.join('_' if char in invalid else char for char in name).strip()
+    return cleaned or "Resume"
+
+
+def build_profile_photo_block(settings: GeneratorSettings, output_dir: Path) -> str:
+    if settings.profile_photo_file is None or not settings.profile_photo_file.exists():
+        return ""
+    target_name = f"profile_photo{settings.profile_photo_file.suffix}"
+    target_path = output_dir / target_name
+    shutil.copy2(settings.profile_photo_file, target_path)
+    return f"\\photoR{{2.8cm}}{{{target_name}}}"
+
+
+def build_static_placeholders(
+    settings: GeneratorSettings,
+    master_data: str,
+    output_dir: Path,
+) -> Dict[str, str]:
+    linkedin_url = extract_field(master_data, "LinkedIn") or "https://linkedin.com/in/your-profile"
+    github_url = extract_field(master_data, "GitHub") or "https://github.com/your-profile"
+    email_address = extract_field(master_data, "Email") or "you@example.com"
+    location = extract_field(master_data, "Location") or "Your Location"
+    full_name = extract_field(master_data, "Name") or extract_field(master_data, "Full Name") or "Your Name"
+    return {
+        "FULL_NAME": full_name,
+        "EMAIL_ADDRESS": email_address,
+        "LINKEDIN_URL": linkedin_url,
+        "GITHUB_URL": github_url,
+        "LOCATION": location,
+        "PROFILE_PHOTO_BLOCK": build_profile_photo_block(settings, output_dir),
+        "PORTFOLIO_NOTE": "\\cvsection{Additional Information}\nFull project portfolio and references available upon request.",
+    }
+
+
+def build_resume_prompt(
+    placeholders: Sequence[str],
     master_data: str,
     application_text: str,
-    company_research: str | None,
+    company_research: str,
 ) -> str:
     placeholder_block = "\n".join(f"- {name}" for name in placeholders)
-    research_block = company_research.strip() if company_research else "No research file provided."
-
-    keyed_constraints: List[str] = []
+    constraints: List[str] = []
     for name in placeholders:
-        if "PROFILE" in name:
-            keyed_constraints.append(f"- {name}: 2-4 sentences, no bullet list.")
-        elif "EXPERIENCE" in name:
-            keyed_constraints.append(
-                f"- {name}: LaTeX list/event fragments only, 3-7 bullets total, each bullet one concise sentence."
-            )
-        elif "PROJECT" in name:
-            keyed_constraints.append(
-                f"- {name}: 2-4 project entries maximum, each with concrete tools and one measurable outcome."
-            )
+        if name == "TAILORED_PROFILE":
+            constraints.append(f"- {name}: 2-4 sentences, no bullet list, evidence-backed and role-specific.")
         elif "COURSEWORK" in name:
-            keyed_constraints.append(f"- {name}: 6-8 relevant items, strongest relevance first.")
-        elif "CERTIFICATION" in name:
-            keyed_constraints.append(f"- {name}: 3-6 role-relevant certifications, concise formatting.")
-        elif "SKILL" in name:
-            keyed_constraints.append(f"- {name}: role-focused tags only, omit unrelated skills.")
+            constraints.append(
+                f"- {name}: 6-8 subjects maximum, show marks beside each chosen subject, prioritize strongest relevant marks first."
+            )
+        elif "PROJECTS" in name:
+            constraints.append(
+                f"- {name}: 2-4 projects maximum, concrete tools and technical details, use compact LaTeX fragments only."
+            )
+        elif "EXPERIENCE" in name:
+            constraints.append(
+                f"- {name}: concise LaTeX event/list fragments only, select only the most relevant experience entries."
+            )
+        elif "SKILLS" in name:
+            constraints.append(f"- {name}: role-relevant technical skill groups or tags only.")
+        elif "CERTIFICATIONS" in name:
+            constraints.append(f"- {name}: role-relevant certifications only, concise formatting.")
         elif "BULLET" in name:
-            keyed_constraints.append(f"- {name}: exactly one bullet sentence with quantified or specific detail.")
+            constraints.append(f"- {name}: exactly one sentence, quantified or specific if possible.")
         else:
-            keyed_constraints.append(f"- {name}: concise LaTeX-safe content fragment.")
-
-    keyed_constraints_block = "\n".join(keyed_constraints)
+            constraints.append(f"- {name}: concise LaTeX-safe content fragment.")
 
     return f"""
 You are generating LaTeX-ready section content for a resume template.
-Return data ONLY through the structured response schema. Do not output markdown.
+Return data only through the structured response schema.
+Do not output markdown, commentary, code fences, XML, or YAML.
 
 Rules:
 1) Produce exactly one string value for each placeholder key.
-2) Each value must be valid LaTeX fragment content for insertion.
-3) Do not include surrounding placeholder braces in values.
-4) Do not invent achievements not supported by source data.
-5) Keep output concise and role-focused.
-6) Escape LaTeX-sensitive characters when needed: %, &, _, #.
-7) Never include code fences, YAML, XML, or commentary.
-8) Do not repeat the same claim across multiple fields unless context requires it.
+2) Every value must be valid LaTeX fragment content for direct insertion.
+3) Do not include surrounding placeholder braces in the returned values.
+4) Do not invent achievements not supported by the source data.
+5) Escape LaTeX-sensitive characters when needed, including %, &, _, and #.
+6) Avoid repeating the same claim across multiple fields unless it is central to the role fit.
+7) Relevant coursework must show grades/marks beside the selected subject names.
 
 Per-placeholder constraints:
-{keyed_constraints_block}
+{chr(10).join(constraints)}
 
 Placeholders to fill:
 {placeholder_block}
 
-Static profile data source:
+Static source data:
 ---
 {master_data}
 ---
 
-Target application text:
+Target application:
 ---
 {application_text}
 ---
 
-Manual company research notes:
+Company research:
 ---
-{research_block}
+{company_research or 'No company research provided.'}
 ---
 """.strip()
 
 
-def call_model(
+def build_company_research_query(job: JobSpec) -> str:
+    role_hint_text = f"Role hint: {job.role_hint}\n" if job.role_hint else ""
+    return f"""
+Research the company {job.company_name}.
+{role_hint_text}
+Produce a concise markdown brief with these sections:
+1. Company self-description
+2. External perspective and useful candidate context
+3. Internship or graduate-role expectations
+4. Relevant technical stacks, domains, and strengths to emphasize
+5. ATS, recruiter, and trigger keywords likely worth echoing when truly evidenced
+6. Brand and visual direction with one primary accent HEX and one soft tint HEX
+
+Use the role hint for extra specificity when available.
+Keep claims source-aware and concise.
+""".strip()
+
+
+def call_structured_model(
     client: genai.Client,
     model_name: str,
     prompt: str,
     schema_model: type[BaseModel],
+    rate_limiter: ApiRateLimiter,
 ) -> Dict[str, str]:
-    response = client.models.generate_content(
-        model=model_name,
+    response = generate_content_with_retry(
+        client=client,
+        model_name=model_name,
         contents=prompt,
         config=types.GenerateContentConfig(
             temperature=0.2,
             response_mime_type="application/json",
             response_schema=schema_model,
         ),
+        rate_limiter=rate_limiter,
+        max_attempts=3,
     )
 
     if getattr(response, "parsed", None) is not None:
         parsed = response.parsed
         if isinstance(parsed, BaseModel):
-            return parsed.model_dump()
+            return cast(Dict[str, str], parsed.model_dump())
         if isinstance(parsed, dict):
-            return parsed
+            return cast(Dict[str, str], parsed)
 
     text = getattr(response, "text", None)
     if not text:
         raise RuntimeError("Model returned no parsable content.")
-
     data = json.loads(text)
     if not isinstance(data, dict):
         raise RuntimeError("Structured output was not a JSON object.")
-    return data
+    return cast(Dict[str, str], data)
 
 
-def sanitize_model_output(value: str) -> str:
-    cleaned = value.strip()
-    cleaned = cleaned.replace("```latex", "").replace("```", "").strip()
-    return cleaned
+def maybe_generate_company_research(
+    client: genai.Client,
+    settings: GeneratorSettings,
+    job: JobSpec,
+    rate_limiter: ApiRateLimiter,
+) -> str:
+    if job.company_research_file.exists():
+        existing = read_text(job.company_research_file).strip()
+        if existing:
+            return existing
+    if not settings.enable_company_research_search:
+        return ""
+
+    response = generate_content_with_retry(
+        client=client,
+        model_name=settings.research_model_name,
+        contents=build_company_research_query(job),
+        config=types.GenerateContentConfig(
+            temperature=0.2,
+            tools=[types.Tool(google_search=types.GoogleSearch())],
+        ),
+        rate_limiter=rate_limiter,
+        max_attempts=2,
+    )
+
+    research_text = getattr(response, "text", None)
+    if not research_text:
+        return ""
+    write_text(job.company_research_file, research_text.strip() + "\n")
+    return research_text.strip()
 
 
-def validate_key_parity(placeholders: List[str], model_data: Dict[str, str]) -> None:
-    expected = set(placeholders)
-    actual = set(model_data.keys())
-
-    missing = sorted(expected - actual)
-    extra = sorted(actual - expected)
-
-    if missing or extra:
-        lines = ["Placeholder/schema mismatch detected."]
-        if missing:
-            lines.append(f"Missing keys: {', '.join(missing)}")
-        if extra:
-            lines.append(f"Unexpected keys: {', '.join(extra)}")
-        raise ValueError("\n".join(lines))
-
-
-def render_template(template_text: str, model_data: Dict[str, str]) -> str:
-    rendered = template_text
-    for key, value in model_data.items():
-        rendered = rendered.replace(f"{{{{{key}}}}}", sanitize_model_output(value))
-    return rendered
-
-
-def run_compile(compiler: str, tex_file: Path, working_dir: Path) -> Tuple[int, str, str]:
-    if shutil.which(compiler) is None:
-        raise RuntimeError(
-            f"Compiler '{compiler}' not found on PATH. Install TeX Live or MiKTeX and retry."
+def parse_output_folder(folder: Path) -> OutputFolderRecord:
+    match = OUTPUT_DIR_PATTERN.match(folder.name)
+    if match:
+        return OutputFolderRecord(
+            logical_name=match.group("name"),
+            path=folder,
+            batch=int(match.group("batch")),
+            index=int(match.group("index")),
         )
+    return OutputFolderRecord(logical_name=folder.name, path=folder, batch=1, index=1)
 
-    cmd = [
-        compiler,
-        "-interaction=nonstopmode",
-        "-halt-on-error",
-        tex_file.name,
+
+def collect_output_folders(outputs_root: Path) -> List[OutputFolderRecord]:
+    if not outputs_root.exists():
+        return []
+    records = [parse_output_folder(path) for path in outputs_root.iterdir() if path.is_dir()]
+    records.sort(key=lambda item: (item.batch, item.index, item.logical_name.lower()))
+    return records
+
+
+def rename_paths(rename_map: Dict[Path, Path]) -> None:
+    if not rename_map:
+        return
+    temp_paths: Dict[Path, Path] = {}
+    for index, source in enumerate(rename_map):
+        temp_path = source.with_name(f".__tmp_rename_{index}__ {source.name}")
+        source.rename(temp_path)
+        temp_paths[temp_path] = rename_map[source]
+    for temp_path, target in temp_paths.items():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        temp_path.rename(target)
+
+
+def bump_non_current_output_folders(outputs_root: Path, current_job_names: Sequence[str]) -> None:
+    current_set = {name.lower() for name in current_job_names}
+    rename_map: Dict[Path, Path] = {}
+    for record in collect_output_folders(outputs_root):
+        if record.logical_name.lower() in current_set:
+            continue
+        new_name = f"{min(record.batch + 1, 99):02d}-{record.index:02d} {record.logical_name}"
+        if record.path.name != new_name:
+            rename_map[record.path] = record.path.with_name(new_name)
+    rename_paths(rename_map)
+
+
+def ensure_current_output_folder(outputs_root: Path, logical_name: str, batch_index: int) -> Path:
+    desired_name = f"01-{batch_index:02d} {logical_name}"
+    desired_path = outputs_root / desired_name
+    existing = None
+    for record in collect_output_folders(outputs_root):
+        if record.logical_name.lower() == logical_name.lower():
+            existing = record.path
+            break
+    if existing is None:
+        desired_path.mkdir(parents=True, exist_ok=True)
+        return desired_path
+    if existing != desired_path:
+        rename_paths({existing: desired_path})
+    desired_path.mkdir(parents=True, exist_ok=True)
+    return desired_path
+
+
+def next_archive_version(archive_dir: Path) -> int:
+    highest = 0
+    if archive_dir.exists():
+        for path in archive_dir.iterdir():
+            if not path.is_file():
+                continue
+            match = ARCHIVE_VERSION_PATTERN.search(path.name)
+            if match:
+                highest = max(highest, int(match.group("version")))
+    return highest + 1
+
+
+def archive_existing_artifacts(job_output_dir: Path, resume_title: str) -> None:
+    safe_title = safe_filename(resume_title)
+    current_artifacts = [
+        job_output_dir / f"{safe_title}.tex",
+        job_output_dir / f"{safe_title}.pdf",
+        job_output_dir / "sections.json",
     ]
-
-    completed = subprocess.run(
-        cmd,
-        cwd=working_dir,
-        capture_output=True,
-        text=True,
-        check=False,
-    )
-
-    return completed.returncode, completed.stdout, completed.stderr
-
-
-def write_json(path: Path, data: Dict[str, str]) -> None:
-    path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+    existing = [path for path in current_artifacts if path.exists()]
+    if not existing:
+        return
+    archive_dir = job_output_dir / "ARCHIVE"
+    archive_dir.mkdir(parents=True, exist_ok=True)
+    version = next_archive_version(archive_dir)
+    for path in existing:
+        archived_name = f"{path.stem} V{version}{path.suffix}"
+        shutil.move(str(path), str(archive_dir / archived_name))
 
 
-def main() -> None:
-    config = parse_args()
+def build_job_artifact_paths(job_output_dir: Path, resume_title: str) -> Dict[str, Path]:
+    safe_title = safe_filename(resume_title)
+    return {
+        "tex": job_output_dir / f"{safe_title}.tex",
+        "pdf": job_output_dir / f"{safe_title}.pdf",
+        "json": job_output_dir / "sections.json",
+        "stdout": job_output_dir / "compile.stdout.log",
+        "stderr": job_output_dir / "compile.stderr.log",
+    }
 
-    ensure_applications_path(config.application_file)
 
-    template_text = read_text(config.template_file)
-    master_data = read_text(config.master_portfolio_file)
-    application_text = read_text(config.application_file)
-    company_research = (
-        read_text(config.company_research_file) if config.company_research_file else None
-    )
+def load_template_text(settings: GeneratorSettings) -> str:
+    template_file = settings.templates_root / settings.selected_template_name
+    return read_text(template_file)
 
-    placeholders = extract_placeholders(template_text)
-    schema_model = build_schema_model(placeholders)
-    prompt = build_prompt(placeholders, master_data, application_text, company_research)
 
-    api_key = resolve_api_key(config.api_key_file)
-    client = genai.Client(api_key=api_key)
-    model_data = call_model(client, config.model_name, prompt, schema_model)
+def copy_template_support_files(settings: GeneratorSettings, output_dir: Path) -> None:
+    # Copy class/style files so custom LaTeX templates (e.g., AltaCV) compile in output folders.
+    for extension in ("*.cls", "*.sty", "*.bst", "*.bbx", "*.cbx"):
+        for support_file in settings.templates_root.glob(extension):
+            if support_file.is_file():
+                shutil.copy2(support_file, output_dir / support_file.name)
+
+
+def process_job(
+    client: genai.Client,
+    settings: GeneratorSettings,
+    master_data: str,
+    template_text: str,
+    job: JobSpec,
+    output_dir: Path,
+    rate_limiter: ApiRateLimiter,
+) -> None:
+    archive_existing_artifacts(output_dir, settings.resume_title)
+    static_template = render_template(template_text, build_static_placeholders(settings, master_data, output_dir))
+    placeholders = extract_placeholders(static_template)
+
+    if job.manual_sections_file is not None:
+        model_data = load_manual_sections(job.manual_sections_file)
+    else:
+        application_text = read_text(job.job_description_file)
+        company_research = maybe_generate_company_research(client, settings, job, rate_limiter)
+        if not company_research and job.company_research_file.exists():
+            company_research = read_text(job.company_research_file)
+        prompt = build_resume_prompt(placeholders, master_data, application_text, company_research)
+        schema_model = build_schema_model(placeholders)
+        model_data = call_structured_model(client, settings.model_name, prompt, schema_model, rate_limiter)
+
     validate_key_parity(placeholders, model_data)
+    artifact_paths = build_job_artifact_paths(output_dir, settings.resume_title)
+    write_json(artifact_paths["json"], model_data)
 
-    output_dir = config.output_root / config.run_name
-    output_dir.mkdir(parents=True, exist_ok=True)
+    rendered_tex = render_template(static_template, model_data)
+    write_text(artifact_paths["tex"], rendered_tex)
 
-    write_json(output_dir / "sections.json", model_data)
-
-    rendered_tex = render_template(template_text, model_data)
-    rendered_tex_path = output_dir / "resume.tex"
-    rendered_tex_path.write_text(rendered_tex, encoding="utf-8")
-
-    print("Resume generation complete.")
-    print(f"Run directory: {output_dir}")
-    print(f"LaTeX file: {rendered_tex_path}")
-
-    if config.no_compile:
-        print("PDF compilation skipped (--no-compile set).")
+    if not settings.compile_pdf:
         return
 
-    code, stdout, stderr = run_compile(config.compiler, rendered_tex_path, output_dir)
-    (output_dir / "compile.stdout.log").write_text(stdout, encoding="utf-8")
-    (output_dir / "compile.stderr.log").write_text(stderr, encoding="utf-8")
+    copy_template_support_files(settings, output_dir)
 
-    if code != 0:
-        raise RuntimeError(
-            "LaTeX compilation failed. Inspect compile.stdout.log and compile.stderr.log in "
-            f"{output_dir}"
+    compiler = resolve_available_compiler(settings.compiler)
+    if compiler is None and settings.auto_install_latex_on_windows and os.name == "nt":
+        print("LaTeX compiler not found. Attempting automatic MiKTeX install via winget...")
+        if try_install_latex_windows():
+            compiler = resolve_available_compiler(settings.compiler)
+
+    if compiler is None:
+        warning = (
+            "PDF compilation skipped because no LaTeX compiler was found. "
+            "Run install_latex.ps1 (Windows) or install TeX Live/MiKTeX manually, then re-run main.py."
+        )
+        print(f"Warning: {warning}")
+        write_text(artifact_paths["stderr"], warning + "\n")
+        return
+    preferred_path = shutil.which(settings.compiler)
+    if preferred_path is None or Path(preferred_path).resolve() != Path(compiler).resolve():
+        print(
+            f"Warning: preferred compiler '{settings.compiler}' not found. "
+            f"Using '{compiler}' instead."
         )
 
-    generated_pdf = output_dir / "resume.pdf"
-    if not generated_pdf.exists():
-        raise RuntimeError("Compilation finished but resume.pdf was not created.")
+    compilers_to_try = [compiler]
+    primary_name = Path(compiler).name.lower()
+    fallback_name = "pdflatex" if "xelatex" in primary_name else "xelatex"
+    fallback_compiler = resolve_available_compiler(fallback_name)
+    if fallback_compiler is not None and fallback_compiler not in compilers_to_try:
+        compilers_to_try.append(fallback_compiler)
 
-    print(f"PDF file: {generated_pdf}")
+    final_code = 1
+
+    for attempt_index, compiler_to_try in enumerate(compilers_to_try, start=1):
+        code, stdout, stderr = run_compile(compiler_to_try, artifact_paths["tex"], output_dir)
+        final_code = code
+
+        header = f"=== Attempt {attempt_index} using {compiler_to_try} ===\n"
+        if attempt_index == 1:
+            write_text(artifact_paths["stdout"], header + stdout)
+            write_text(artifact_paths["stderr"], header + stderr)
+        else:
+            write_text(artifact_paths["stdout"], read_text(artifact_paths["stdout"]) + "\n" + header + stdout)
+            write_text(artifact_paths["stderr"], read_text(artifact_paths["stderr"]) + "\n" + header + stderr)
+
+        if code == 0:
+            break
+
+    if final_code != 0:
+        raise RuntimeError(
+            f"LaTeX compilation failed for {job.job_name}. Inspect {artifact_paths['stdout']} and {artifact_paths['stderr']}"
+        )
+    produced_pdf = artifact_paths["tex"].with_suffix(".pdf")
+    if produced_pdf.exists() and produced_pdf != artifact_paths["pdf"]:
+        shutil.move(str(produced_pdf), str(artifact_paths["pdf"]))
+    if not artifact_paths["pdf"].exists():
+        raise RuntimeError(f"Compilation completed but PDF was not produced for {job.job_name}.")
 
 
-if __name__ == "__main__":
-    main()
+def run_batch(settings: GeneratorSettings) -> None:
+    ensure_supporting_structure(settings)
+    settings.outputs_root.mkdir(parents=True, exist_ok=True)
+
+    jobs = discover_jobs(settings.applications_root)
+    if not jobs:
+        raise RuntimeError(
+            f"No job_description.md files were found under {settings.applications_root}. "
+            "Create an application folder using applications/COMPANY_NAME - JOB_NAME/."
+        )
+
+    bump_non_current_output_folders(settings.outputs_root, [job.job_name for job in jobs])
+
+    api_key = resolve_api_key(settings.api_key_file)
+    client = genai.Client(api_key=api_key)
+    rate_limiter = ApiRateLimiter(settings.api_call_delay_seconds)
+    master_data = read_text(settings.master_portfolio_file)
+    template_text = load_template_text(settings)
+
+    print(f"Found {len(jobs)} job(s) to process.")
+    for index, job in enumerate(jobs, start=1):
+        output_dir = ensure_current_output_folder(settings.outputs_root, job.job_name, index)
+        process_job(client, settings, master_data, template_text, job, output_dir, rate_limiter)
+        print(f"Completed: {job.job_name} -> {output_dir}")

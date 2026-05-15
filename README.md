@@ -1,130 +1,145 @@
 # Resume Generator (Gemini + LaTeX)
 
-A reusable Python pipeline that turns your portfolio data plus a target application into a tailored LaTeX resume and compiled PDF.
+This repo generates tailored LaTeX resumes in batch from job folders under applications.
+The workflow is driven by main.py rather than command-line flags.
 
-## What this repo gives you
-- Structured resume generation with `google-genai` using `gemini-2.5-flash`.
-- Strict JSON output via Pydantic schema keys that match your template placeholders.
-- Generic template support: bring any `.tex` template that uses `{{PLACEHOLDER}}` tokens.
-- Automatic output of both `.tex` and `.pdf` in a dedicated run folder.
-- Prompt pack to help users gather company research and normalize project portfolios.
+## Core workflow
+1. Put your API key in secrets/gemini_api_key.txt.
+2. Configure settings at the top of main.py.
+3. Fill data/master_portfolio.md with your personal master data.
+4. Create one folder per job under applications.
+5. Run python main.py.
 
-## Repository layout
-- `generate_resume.py`: CLI pipeline.
-- `requirements.txt`: Python dependencies.
-- `data/master_portfolio.md`: static profile, metrics, experience, and projects source.
-- `templates/template.tex`: AltaCV starter template with required placeholders.
-- `applications/`: target job descriptions and optional company-research notes.
-- `outputs/`: generated run artifacts.
-- `prompts/`: reusable prompt-engineering assets.
-
-## Quickstart
-
-### 1) Install dependencies
-```bash
-pip install -r requirements.txt
+## Easiest PDF setup (Windows)
+If you want automatic PDF output from LaTeX, run this once:
+```powershell
+./install_latex.ps1
+```
+Then close and reopen PowerShell and run:
+```powershell
+python main.py
 ```
 
-### 2) Set your API key (easy local-file option)
-The script supports two ways to provide your key.
+What this does:
+- Installs MiKTeX using winget.
+- Lets the generator use xelatex/pdflatex for PDF creation.
 
-Recommended beginner option (local file):
-1. Copy `secrets/gemini_api_key.template.txt` to `secrets/gemini_api_key.txt`
-2. Paste your raw key on one line in `secrets/gemini_api_key.txt`
-3. Run the script normally
+If you skip this install:
+- The generator still creates .tex and sections.json.
+- PDF output is skipped until a LaTeX engine is available.
 
-Security notes:
-- `secrets/gemini_api_key.txt` is ignored by git in `.gitignore`.
-- Never paste your real key into tracked files like `README.md` or source code.
-- If a key is exposed, revoke and regenerate it in Google AI Studio.
+## Key links
+- Free Google API key quickstart: https://ai.google.dev/gemini-api/docs/api-key
+- Gemini API docs and capabilities: https://ai.google.dev/gemini-api/docs
 
-Alternative option (environment variable):
-The script first checks `GEMINI_API_KEY` in your environment.
+## Local API key file
+Recommended local-only setup:
+1. Copy secrets/gemini_api_key.template.txt to secrets/gemini_api_key.txt
+2. Paste your raw API key on one line
+3. Keep that file local only
 
-Where to get a free key:
-1. Go to https://aistudio.google.com
-2. Sign in.
-3. Open API key management.
-4. Create key.
-5. Export it locally.
+The repo ignores secrets/gemini_api_key.txt in git.
 
-PowerShell example:
+One-time terminal alternative:
 ```powershell
 $env:GEMINI_API_KEY="YOUR_KEY_HERE"
 ```
 
-Persistent PowerShell option (survives new terminals):
+Persistent Windows user environment alternative:
 ```powershell
 setx GEMINI_API_KEY "YOUR_KEY_HERE"
 ```
 
-After `setx`, open a new terminal before running the script.
+Open a new terminal after setx.
 
-### 3) Add your inputs
-- Edit `data/master_portfolio.md` with your profile and projects.
-- Put the target application text in `applications/`.
-- Optionally add manual company research notes in `applications/`.
+## main.py configuration
+Use main.py to change:
+- selected template name
+- model name
+- research model name
+- whether PDF compilation runs
+- compiler choice
+- whether web-backed company research generation is enabled
+- API throttling delay
+- resume title
+- profile photo file path
 
-### 4) Run generation
-```bash
-python generate_resume.py applications/example_job_description.txt
+## Applications folder structure
+The generator recursively scans applications for job folders.
+It ignores folders named ARCHIVE, UNSTAGED, and COMPANY_NAME - JOB_NAME.
+
+Canonical job folder shape:
+```text
+applications/
+  Company Name - Role Title/
+    job_description.md
+    company_research.md
+    sections.json              optional manual override
+    sections_override.json     optional manual override
 ```
 
-Optional arguments:
-- `--template templates/template.tex`
-- `--master-data data/master_portfolio.md`
-- `--company-research applications/example_company_research.md`
-- `--compiler xelatex` (or `pdflatex`)
-- `--run-name company_role`
-- `--no-compile` (generate `.tex` + `sections.json` only)
-- `--api-key-file secrets/gemini_api_key.txt`
-
-Example with research file and compile skipped:
-```bash
-python generate_resume.py applications/example_job_description.txt --company-research applications/example_company_research.md --run-name example_robotics --no-compile
+The included starter folder is created automatically at:
+```text
+applications/
+  COMPANY_NAME - JOB_NAME/
+    README.md
+    job_description.md
+    company_research.md
 ```
+
+Folder naming note:
+- The generator reads the company name from the folder title by splitting on the first " - ".
+- Any text after that is treated as a role hint for more specific research and output naming.
+
+## Manual JSON override
+If you paste the AI-generated sections JSON into a job folder as sections.json or sections_override.json, the program skips AI generation for that job and renders the template directly from that JSON.
+This is the fastest way to make manual revisions while keeping the rest of the pipeline intact.
+
+## Optional web-backed company research
+If enable_company_research_search is true in main.py and company_research.md is missing or empty, the generator can request company research automatically using a Google search-enabled model call.
+This is intended for users willing to use a model configuration that supports that workflow.
+
+The company research prompt emphasizes:
+- company context
+- role-specific expectations
+- visual colour theme suggestions
+- ATS/recruiter trigger words and keyword cues
 
 ## Output behavior
-Each run creates `outputs/<run_name>/` containing:
-- `resume.tex`
-- `resume.pdf`
-- `sections.json` (model output)
-- `compile.stdout.log`
-- `compile.stderr.log`
+The outputs folder contains one folder per logical job, prefixed as:
+```text
+XX-YY Job Name
+```
 
-If `--no-compile` is used, only `resume.tex` and `sections.json` are created.
+Meaning:
+- XX = batch age, with the newest generation batch always using 01
+- YY = the job index within the newest batch
 
-## Template modularity
-This pipeline is template-agnostic.
+If an existing job is regenerated:
+- its existing output folder is reused and renamed to the newest 01-YY position
+- active resume artifacts are archived inside that job output folder under ARCHIVE
+- archived files receive a suffix like V1, V2, and so on
 
-Rules for any custom template:
-1. Use double-curly placeholders like `{{TAILORED_PROFILE}}`.
-2. Keep placeholders as content slots, not style commands.
-3. Ensure all placeholders can be represented as string fields in JSON.
+New active files do not get V numbers.
 
-The script automatically:
-- scans placeholders,
-- builds a strict Pydantic schema,
-- enforces key parity,
-- injects returned values into the LaTeX template.
+## Output files
+Each active job output folder contains:
+- [resume title].tex
+- [resume title].pdf if compile_pdf is enabled and compilation succeeds
+- sections.json
+- compile.stdout.log when PDF compilation runs
+- compile.stderr.log when PDF compilation runs
 
-## Prompt pack
-- `prompts/company_research_prompt.md`
-- `prompts/template_conversion_prompt.md`
-- `prompts/section_tailoring_prompt.md`
-- `prompts/project_portfolio_normalizer_prompt.md`
+## Template switching
+Put templates in templates and change SELECTED_TEMPLATE_NAME in main.py.
+The generator scans placeholders from the chosen template automatically.
 
-The portfolio normalizer prompt lets users paste rough project notes and outputs a consistent project catalog markdown format for reliable resume generation.
+## Profile photo
+Put a profile photo in assets/profile_photo and point PROFILE_PHOTO_FILE in main.py to it.
+The default template places it in the top-right header area.
 
-## Notes and limitations
-- Free Gemini API workflows may not include web browsing. Use manual research and paste notes into a file.
-- You need a local LaTeX distribution (TeX Live or MiKTeX) with the selected compiler available on PATH.
-- If compilation fails, inspect the compile logs in the run folder.
-
-## Publish-ready usage flow for friends and classmates
-1. Clone repo.
-2. Set API key.
-3. Fill `data/master_portfolio.md`.
-4. Drop job description into `applications/`.
-5. Run one command.
-6. Collect `.tex` and `.pdf` from `outputs/<run>/`.
+## Notes
+- Relevant coursework selection is expected to show marks beside the chosen subjects.
+- The default template includes full LinkedIn and GitHub URLs rather than short handles.
+- The default template also includes a note that the full project portfolio and references are available upon request.
+- There is no reliable dependency-free way to render a LaTeX template to PDF without a LaTeX engine. If you want PDF output from this template, install MiKTeX or TeX Live.

@@ -1,40 +1,41 @@
-# Company Research Prompt (Manual Input Workflow)
+# Company Research Prompt
 
-Use this prompt in your preferred AI assistant that supports internet-enabled research.
-If you are using a free Gemini API pipeline without browsing, do this manually in another tool and paste the output into a local research file.
+Use this prompt when you want company research written into the repository's expected company_research.md format.
 
 ---
 
-I want professionally curated information about the company: [COMPANY_NAME].
+I want professionally curated information about the company: [COMPANY_NAME]
+Optional role hint from the application folder title: [ROLE_HINT]
 
-Please produce a structured report with the following sections:
+Please produce a structured markdown report with these sections:
 
 1. Company self-description
 - Who they are
 - What they do
-- Mission and values in their own words
-- Core products/services
+- Mission, values, and positioning in their own language where possible
 
 2. External perspective
-- What candidates/employees/public sources commonly say about them
-- Useful behind-the-scenes insights
-- Risks, trade-offs, or known pressure points relevant to internships
+- What candidates, employees, or public commentary commonly suggest about them
+- Useful behind-the-scenes context for an applicant
+- Any risks, trade-offs, or cultural signals worth knowing
 
-3. Internship expectations
-- What they appear to want from interns
-- Typical technical and behavioral signals they reward
-- Team or role-specific expectations if available
+3. Role expectations
+- What they appear to want from interns, graduates, or junior engineers
+- What kinds of technical and behavioural signals they reward
+- Use the role hint for extra specificity if one was provided
 
-4. Role-alignment clues
-- Keywords and capability signals that should appear in a tailored engineering resume
-- Technical stacks, tools, standards, and domains to emphasize
+4. Tailoring signals
+- Technical stacks, domains, standards, and themes worth emphasizing
+- Specific key phrases, trigger words, or ATS-style keywords that are likely useful when truly evidenced by the candidate
 
 5. Brand and visual direction
-- What appears to be their dominant brand color(s)
-- Recommend one primary resume accent color (HEX) and one lighter companion tint (HEX)
-- Brief reason for the recommendation
+- Dominant brand colour(s)
+- One recommended primary accent colour in HEX
+- One recommended soft tint in HEX
+- Short reason for the recommendation
 
-Output format requirements:
+Output requirements:
 - Use clear section headings.
-- Keep claims source-aware and avoid unsupported assumptions.
-- End with a short bullet list: "Resume Tailoring Inputs".
+- Keep claims source-aware.
+- Avoid unsupported assumptions.
+- End with a short bullet list titled "Resume Tailoring Inputs".
