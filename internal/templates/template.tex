@@ -1,5 +1,5 @@
-\documentclass[10pt,a4paper,withhyper]{altacv}
-\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=1.2cm}
+\documentclass[10pt,a4paper,withhyper,normalphoto]{altacv}
+\geometry{left=1.25cm,right=1.25cm,top=1.5cm,bottom=1.5cm,columnsep=0.9cm}
 \usepackage{paracol}
 
 \iftutex
@@ -34,7 +34,40 @@
 \renewcommand{\cvItemMarker}{{\small\textbullet}}
 \renewcommand{\cvRatingMarker}{\faCircle}
 
-\newcommand{\YouTubeRoleCard}[5]{%
+\newcommand{\ResumeTightItemize}[1]{%
+\begin{itemize}[label=\textbullet, nosep, leftmargin=*, topsep=0.25em, partopsep=0pt, parsep=0pt, itemsep=0.2em]
+  #1
+\end{itemize}
+}
+
+\newcommand{\ResumeMetaLine}[2]{%
+\noindent
+\begin{minipage}[t]{0.63\linewidth}
+\raggedright\small #1
+\end{minipage}\hfill
+\begin{minipage}[t]{0.33\linewidth}
+\raggedleft\footnotesize\mbox{#2}
+\end{minipage}\par
+}
+
+\renewcommand{\cvevent}[4]{%
+  {\large\color{emphasis}#1\par}
+  \smallskip\normalsize
+  \ifstrequal{#2}{}{}{%
+    \ResumeMetaLine{\textbf{\color{accent}#2}}{#3}
+  }%
+  \ifstrequal{#2}{}{% 
+    \ifstrequal{#3}{}{}{% 
+      {\small #3\par}%
+    }%
+  }{}
+  \ifstrequal{#4}{}{}{% 
+    {\small #4\par}%
+  }%
+  \medskip\normalsize
+}
+
+\newcommand{\YouTubeRoleCard}[4]{%
 \begin{tcolorbox}[
   colback=GoldenEarth!20,
   colframe=PastelRed,
@@ -42,50 +75,36 @@
   arc=1.8mm,
   left=1mm,right=1mm,top=1mm,bottom=1mm
 ]
-\cvevent{Product Development}{I did a thing (YouTube)}{#1}{5.5M+ Subscribers \textbar\ #2}
-\begin{itemize}
+{\large\color{emphasis}Product Development\par}
+\smallskip\normalsize
+\textbf{\color{accent}I did a thing (YouTube)}\par
+\smallskip
+\ResumeMetaLine{#1}{5.5M+ Subscribers \textbar\ 10 Builds}
+\vspace{0.25em}
+\ResumeTightItemize{%
+  \item #2
   \item #3
   \item #4
-  \item #5
-\end{itemize}
+}
 \end{tcolorbox}
 }
 
 \begin{document}
 \name{{{FULL_NAME}}}
-\tagline{Mechatronics Engineer $\cdot$ UTS \textbar\ {{{TARGET_SPECIALISMS}}}}
+\tagline{Mechatronics Engineering Student}
 \personalinfo{
   \email{{{EMAIL_ADDRESS}}}
   \linkedin{{{LINKEDIN_URL}}}
-  \github{{{GITHUB_URL}}}
-  \location{{{LOCATION}}}
 }
 {{PROFILE_PHOTO_BLOCK}}
 
 \makecvheader
-\columnratio{0.6}
+\vspace{-0.9em}
+\columnratio{0.38}
 \begin{paracol}{2}
 
-\cvsection{Profile}
-{{TAILORED_PROFILE}}
-
-\cvsection{Experience}
-\YouTubeRoleCard
-  { {{YOUTUBE_TIMELINE}} }
-  { {{YOUTUBE_OUTPUT_METRIC}} }
-  { {{YOUTUBE_BULLET_1}} }
-  { {{YOUTUBE_BULLET_2}} }
-  { {{YOUTUBE_BULLET_3}} }
-
-{{DYNAMIC_EXPERIENCE}}
-
-\cvsection{Projects}
-{{DYNAMIC_PROJECTS}}
-
-\switchcolumn
-
 \cvsection{Education}
-\cvevent{B.E. (Honours) Mechatronic Engineering}{University of Technology Sydney}{Jan 2024 -- Nov 2029}{}
+\cvevent{Bachelor of Engineering (Honours)}{Mechatronic Engineering, University of Technology Sydney}{Expected Nov 2029}{}
 \smallskip
 WAM: 81.12 \textbar\ GPA: 5.92
 
@@ -99,6 +118,23 @@ WAM: 81.12 \textbar\ GPA: 5.92
 {{TARGETED_CERTIFICATIONS}}
 
 {{PORTFOLIO_NOTE}}
+
+\switchcolumn
+
+\cvsection{Profile}
+{{TAILORED_PROFILE}}
+
+\cvsection{Experience}
+\YouTubeRoleCard
+  { {{YOUTUBE_TIMELINE}} }
+  { {{YOUTUBE_BULLET_1}} }
+  { {{YOUTUBE_BULLET_2}} }
+  { {{YOUTUBE_BULLET_3}} }
+
+{{DYNAMIC_EXPERIENCE}}
+
+\cvsection{Projects}
+{{DYNAMIC_PROJECTS}}
 
 \end{paracol}
 \end{document}

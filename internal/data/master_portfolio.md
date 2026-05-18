@@ -8,11 +8,16 @@ Pronouns: he/him
 Location: Sydney, NSW, Australia
 Email: possibly.a.dylan@gmail.com
 LinkedIn: https://linkedin.com/in/dylan-bitar
-GitHub: https://github.com/your_github_id
 University: University of Technology Sydney
 Degree: Bachelor of Engineering (Honours)
 Major: Mechatronic Engineering
 Expected Graduation: Nov 2029
+
+### Personal Profile
+- Core values: learning and growth.
+- Actively seeks stretch work, difficult problems, and unfamiliar environments that accelerate development.
+- Takes pride in pursuing excellence across tasks and in contributing meaningfully to a team's day-to-day momentum and morale.
+- Tends to take on a high volume of commitments when they offer challenge, responsibility, or exposure to strong people and ideas.
 
 ## Section B — Education and Transcript
 Program: C09067 Bachelor of Engineering (Honours) Diploma in Professional Engineering Practice
@@ -24,25 +29,25 @@ WAM: 81.12
 Instruction: When selecting relevant coursework for a resume, prioritize subjects that are both role-relevant and among the strongest marks shown below.
 
 ### Completed Subjects
-- Programming 1 — High Distinction, 92
-- Introduction to Engineering Projects — High Distinction, 85
-- Physical Modelling — Distinction, 82
-- Mathematics 2 — Distinction, 82
-- Sensors and Control for Mechatronic Systems — Distinction, 82
-- Mathematics 1 — Distinction, 78
-- Engineering Project Appraisal — Distinction, 76
-- Designing Sustainable Engineering Projects — Credit, 72
-- Introduction to Mechanical Engineering — High Distinction
-- Introduction to Mechatronics Engineering — High Distinction
-- Materials and Manufacturing Engineering A — Distinction
-- Embedded Mechatronics Systems — High Distinction
-- Special Course A (4cp) — High Distinction
-- Industrial Robotics — Distinction
-- Professional Practice Preparation 1 — Pass (not graded)
-- Global Mobility A — Pass (not graded)
-- Machines and Mechanisms A — Pass
-- Mechanical Design Fundamentals Studio 1 — Pass
-- Applied Mechanics and Design A — Pass
+- Programming 1 — HD, 92
+- Introduction to Engineering Projects — HD, 85
+- Physical Modelling — D, 82
+- Mathematics 2 — D, 82
+- Sensors and Control for Mechatronic Systems — D, 82
+- Mathematics 1 — D, 78
+- Engineering Project Appraisal — D, 76
+- Designing Sustainable Engineering Projects — C, 72
+- Introduction to Mechanical Engineering — HD
+- Introduction to Mechatronics Engineering — HD
+- Materials and Manufacturing Engineering A — D
+- Embedded Mechatronics Systems — HD
+- Special Course A — HD
+- Industrial Robotics — D
+- Professional Practice Preparation 1 — P
+- Global Mobility A — P
+- Machines and Mechanisms A — P
+- Mechanical Design Fundamentals Studio 1 — P
+- Applied Mechanics and Design A — P
 
 ## Section C — Personal Experience Catalogue
 
@@ -65,15 +70,27 @@ Feb 2025 - Present
 Apr 2024 - Aug 2025
 - Embedded engineering work with STM32 and embedded C.
 - Exposure to team-based systems integration in a motorsports environment.
+- Worked across a wide variety of projects required to support an autonomous race car program.
+- Extended technical capability in STM32 embedded programming, Altium PCB design, and Fusion 360 through hands-on project work.
+- Benefited from a high-trust team environment that accelerated learning on steep-curve tools such as STM32CubeIDE and Altium.
+
+### Technical Communities
+UTS Rocketry Society · Trainee
+- Regularly attended training sessions and technical classes, prioritizing front-row participation and active learning.
+- Shared office space with the team, creating frequent opportunities to learn informally from experienced members and broaden technical perspective.
 
 ### Leadership and Outreach
 **UTS Aerial Society · Vice President**
 Jun 2024 - Nov 2025
 - Supported the establishment and operation of a new society.
+- Helped navigate the administrative setup required through ActivateUTS and contributed to building the society's early foundation.
 
 **Engineers Without Borders UTS Chapter · General Committee Member**
 Mar 2024 - Oct 2024
 - Helped organize youth outreach events and logistics.
+- Developed time management, communication, and team coordination skills through event planning and delivery.
+- Contributed to a weeklong Wagga Wagga outreach program involving multiple schools and coordination across a team of roughly 20 people.
+- Engineering workshops delivered through the chapter reached 400+ students during 2024.
 
 **Engineers Without Borders UTS Chapter · Volunteer**
 Jun 2024

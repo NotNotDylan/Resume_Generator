@@ -263,6 +263,127 @@ def sanitize_model_output(value: str) -> str:
     return cleaned
 
 
+def extract_latex_items(fragment: str) -> List[str]:
+    return [
+        re.sub(r"\s+", " ", match).strip()
+        for match in re.findall(r"\\item\s+(.*?)(?=(?:\\item|\\end\{itemize\}))", fragment, flags=re.DOTALL)
+    ]
+
+
+def build_latex_itemize(items: Sequence[str]) -> str:
+    unique_items = list(dict.fromkeys(item.strip() for item in items if item.strip()))
+    if not unique_items:
+        return ""
+    body = "\n".join(f"\\item {item}" for item in unique_items)
+    return (
+        "\\begin{itemize}[label=\\textbullet, nosep, leftmargin=*, topsep=0.25em, partopsep=0pt, parsep=0pt, itemsep=0.2em]\n"
+        f"{body}\n"
+        "\\end{itemize}"
+    )
+
+
+def parse_master_bullets(master_data: str, heading: str) -> List[str]:
+    pattern = re.compile(
+        rf"^##\s+{re.escape(heading)}\s*$\n(?P<body>.*?)(?=^##\s+|\Z)",
+        flags=re.MULTILINE | re.DOTALL,
+    )
+    match = pattern.search(master_data)
+    if not match:
+        return []
+    return [item.strip() for item in re.findall(r"^-\s+(.+)$", match.group("body"), flags=re.MULTILINE)]
+
+
+def build_resume_entry(title: str, subtitle: str, date_text: str, items_block: str) -> str:
+    entry_parts = [f"\\cvevent{{{title}}}{{{subtitle}}}{{{date_text}}}{{}}"]
+    if items_block:
+        entry_parts.append("\\vspace{-0.9em}")
+        entry_parts.append(items_block)
+    entry_parts.append("\\medskip")
+    return "\n".join(entry_parts)
+
+
+def normalize_experience_fragment(fragment: str) -> str:
+    entry_pattern = re.compile(
+        r"\\textbf\{(?P<title>.+?)\}\s*\\hfill\s*(?P<date>.*?)\s*\\textit\{(?P<subtitle>.+?)\}\s*(?P<items>\\begin\{itemize\}.*?\\end\{itemize\})",
+        flags=re.DOTALL,
+    )
+    entries: List[str] = []
+    for match in entry_pattern.finditer(fragment):
+        title = re.sub(r"\s+", " ", match.group("title")).strip()
+        subtitle = re.sub(r"\s+", " ", match.group("subtitle")).strip()
+        date_text = re.sub(r"\s+", " ", match.group("date")).strip()
+        if "youtube" in subtitle.lower() or "i did a thing" in subtitle.lower():
+            continue
+        items_block = build_latex_itemize(extract_latex_items(match.group("items")))
+        entries.append(build_resume_entry(title, subtitle, date_text, items_block))
+    return "\n\n".join(entries).strip() or sanitize_model_output(fragment)
+
+
+def normalize_projects_fragment(fragment: str) -> str:
+    entry_pattern = re.compile(
+        r"\\textbf\{(?P<title>.+?)\}\s*\\hfill\s*\\textit\{(?P<subtitle>.+?)\}\s*(?P<items>\\begin\{itemize\}.*?\\end\{itemize\})",
+        flags=re.DOTALL,
+    )
+    entries: List[str] = []
+    for match in entry_pattern.finditer(fragment):
+        title = re.sub(r"\s+", " ", match.group("title")).strip()
+        subtitle = re.sub(r"\s+", " ", match.group("subtitle")).strip()
+        items_block = build_latex_itemize(extract_latex_items(match.group("items")))
+        entries.append(build_resume_entry(title, subtitle, "", items_block))
+    return "\n\n".join(entries).strip() or sanitize_model_output(fragment)
+
+
+def normalize_coursework_fragment(fragment: str, maximum_items: int = 5) -> str:
+    items = extract_latex_items(fragment)
+    if not items:
+        return sanitize_model_output(fragment)
+    return build_latex_itemize(items[:maximum_items])
+
+
+def normalize_certifications_fragment(fragment: str, master_data: str, minimum_items: int = 3) -> str:
+    items = extract_latex_items(fragment)
+    fallback_items = parse_master_bullets(master_data, "Section E — Certifications and Licences")
+    merged_items = list(dict.fromkeys(items + fallback_items))
+    return build_latex_itemize(merged_items[: max(minimum_items, len(items))] or fallback_items[:minimum_items])
+
+
+def normalize_youtube_bullets(model_data: Dict[str, str]) -> None:
+    bullet = model_data.get("YOUTUBE_BULLET_1", "")
+    if not bullet:
+        return
+    bullet = re.sub(
+        r"Rapidly developed\s+17\s+minimum viable products\s+for filmed engineering builds",
+        "Rapidly developed 10 filmed engineering builds",
+        bullet,
+        flags=re.IGNORECASE,
+    )
+    bullet = re.sub(
+        r"Rapidly developed\s+17\s+minimum viable products",
+        "Rapidly developed 10 builds",
+        bullet,
+        flags=re.IGNORECASE,
+    )
+    model_data["YOUTUBE_BULLET_1"] = bullet
+
+
+def normalize_model_sections(model_data: Dict[str, str], master_data: str) -> Dict[str, str]:
+    normalized = dict(model_data)
+    normalize_youtube_bullets(normalized)
+    if "DYNAMIC_EXPERIENCE" in normalized:
+        normalized["DYNAMIC_EXPERIENCE"] = normalize_experience_fragment(normalized["DYNAMIC_EXPERIENCE"])
+    if "DYNAMIC_PROJECTS" in normalized:
+        normalized["DYNAMIC_PROJECTS"] = normalize_projects_fragment(normalized["DYNAMIC_PROJECTS"])
+    if "TARGETED_COURSEWORK" in normalized:
+        normalized["TARGETED_COURSEWORK"] = normalize_coursework_fragment(normalized["TARGETED_COURSEWORK"], maximum_items=5)
+    if "TARGETED_CERTIFICATIONS" in normalized:
+        normalized["TARGETED_CERTIFICATIONS"] = normalize_certifications_fragment(
+            normalized["TARGETED_CERTIFICATIONS"],
+            master_data,
+            minimum_items=3,
+        )
+    return normalized
+
+
 def render_template(template_text: str, values: Dict[str, str]) -> str:
     rendered = template_text
     for key, value in values.items():
@@ -282,6 +403,11 @@ def validate_key_parity(placeholders: Sequence[str], model_data: Dict[str, str])
         if extra:
             message.append(f"Unexpected keys: {', '.join(extra)}")
         raise ValueError("\n".join(message))
+
+
+def filter_model_data(placeholders: Sequence[str], model_data: Dict[str, str]) -> Dict[str, str]:
+    expected = set(placeholders)
+    return {key: value for key, value in model_data.items() if key in expected}
 
 
 def load_manual_sections(path: Path) -> Dict[str, str]:
@@ -418,7 +544,7 @@ def build_static_placeholders(
         "GITHUB_URL": github_url,
         "LOCATION": location,
         "PROFILE_PHOTO_BLOCK": build_profile_photo_block(settings, output_dir),
-        "PORTFOLIO_NOTE": "\\cvsection{Additional Information}\nFull project portfolio and references available upon request.",
+        "PORTFOLIO_NOTE": "\\cvsection{Additional Information}\nFull Project Portfolio \\& References\\nAvailable upon request.",
     }
 
 
@@ -435,20 +561,20 @@ def build_resume_prompt(
             constraints.append(f"- {name}: 2-4 sentences, no bullet list, evidence-backed and role-specific.")
         elif "COURSEWORK" in name:
             constraints.append(
-                f"- {name}: 6-8 subjects maximum, show marks beside each chosen subject, prioritize strongest relevant marks first."
+                f"- {name}: 4-5 subjects maximum, show marks beside each chosen subject, prioritize strongest relevant marks first."
             )
         elif "PROJECTS" in name:
             constraints.append(
-                f"- {name}: 2-4 projects maximum, concrete tools and technical details, use compact LaTeX fragments only."
+                f"- {name}: 2-4 projects maximum, concrete tools and technical details, and format each project as a separate entry with clear spacing."
             )
         elif "EXPERIENCE" in name:
             constraints.append(
-                f"- {name}: concise LaTeX event/list fragments only, select only the most relevant experience entries."
+                f"- {name}: concise LaTeX event/list fragments only, select only the most relevant experience entries, exclude the YouTube product-development role because the template renders it separately, and keep each entry clearly separated."
             )
         elif "SKILLS" in name:
             constraints.append(f"- {name}: role-relevant technical skill groups or tags only.")
         elif "CERTIFICATIONS" in name:
-            constraints.append(f"- {name}: role-relevant certifications only, concise formatting.")
+            constraints.append(f"- {name}: role-relevant certifications only, concise formatting, and include at least 3 certifications when the source data supports it.")
         elif "BULLET" in name:
             constraints.append(f"- {name}: exactly one sentence, quantified or specific if possible.")
         else:
@@ -729,6 +855,8 @@ def process_job(
         schema_model = build_schema_model(placeholders)
         model_data = call_structured_model(client, settings.model_name, prompt, schema_model, rate_limiter)
 
+    model_data = filter_model_data(placeholders, model_data)
+    model_data = normalize_model_sections(model_data, master_data)
     validate_key_parity(placeholders, model_data)
     artifact_paths = build_job_artifact_paths(output_dir, settings.resume_title)
     write_json(artifact_paths["json"], model_data)
