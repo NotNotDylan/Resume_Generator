@@ -2,7 +2,7 @@ __pycache__/
 *.pyc
 .venv/
 .env
-secrets/gemini_api_key.txt
+internal/secrets/gemini_api_key.txt
 
 outputs/*
 !outputs/.gitkeep

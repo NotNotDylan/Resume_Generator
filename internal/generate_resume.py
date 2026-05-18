@@ -771,11 +771,13 @@ def process_job(
         compilers_to_try.append(fallback_compiler)
 
     final_code = 1
+    last_stdout = ""
     last_stderr = ""
 
     for compiler_to_try in compilers_to_try:
-        code, _, stderr = run_compile(compiler_to_try, artifact_paths["tex"], output_dir)
+        code, stdout, stderr = run_compile(compiler_to_try, artifact_paths["tex"], output_dir)
         final_code = code
+        last_stdout = stdout
         last_stderr = stderr
 
         if code == 0:
@@ -783,10 +785,14 @@ def process_job(
 
     if final_code != 0:
         enforce_clean_output_contents(output_dir, settings.resume_title)
+        stdout_lines = [line for line in last_stdout.splitlines() if line.strip()]
         stderr_lines = [line for line in last_stderr.splitlines() if line.strip()]
+        stdout_excerpt = "\n".join(stdout_lines[-40:]) if stdout_lines else "(no stdout output)"
         stderr_excerpt = "\n".join(stderr_lines[-25:]) if stderr_lines else "(no stderr output)"
         raise RuntimeError(
-            f"LaTeX compilation failed for {job.job_name}. Last compiler stderr lines:\n{stderr_excerpt}"
+            f"LaTeX compilation failed for {job.job_name}.\n"
+            f"Last compiler stdout lines:\n{stdout_excerpt}\n\n"
+            f"Last compiler stderr lines:\n{stderr_excerpt}"
         )
     produced_pdf = artifact_paths["tex"].with_suffix(".pdf")
     if produced_pdf.exists() and produced_pdf != artifact_paths["pdf"]:

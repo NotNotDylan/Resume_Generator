@@ -241,15 +241,16 @@
 \newlength{\altacv@photos@width}
 \newlength{\altacv@photo@diam@left}
 \newlength{\altacv@photo@diam@right}
+\newcommand{\profilephotorotation}{0}
 \def\altacv@left@photos{}
 \def\altacv@right@photos{}
 
 \newcommand{\@makeaphoto}[2]{%
   \begin{minipage}{#1}%
     \if@normalphoto
-      \includegraphics[width=\linewidth]{#2}
+      \includegraphics[width=\linewidth,angle=\profilephotorotation]{#2}
     \else
-      \tikz\path[fill overzoom image={#2}]circle[radius=0.5\linewidth];
+      \tikz[rotate=\profilephotorotation]\path[fill overzoom image={#2}]circle[radius=0.5\linewidth];
     \fi%
   \end{minipage}%
 }

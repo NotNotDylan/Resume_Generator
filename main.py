@@ -1,13 +1,14 @@
 from pathlib import Path
-from generate_resume import GeneratorSettings, run_batch
+from internal.generate_resume import GeneratorSettings, run_batch
 
 # User configuration
 APPLICATIONS_ROOT = Path("applications")
 OUTPUTS_ROOT = Path("outputs")
-TEMPLATES_ROOT = Path("templates")
+INTERNAL_ROOT = Path("internal")
+TEMPLATES_ROOT = INTERNAL_ROOT / "templates"
 SELECTED_TEMPLATE_NAME = "template.tex"
-MASTER_PORTFOLIO_FILE = Path("data/master_portfolio.md")
-API_KEY_FILE = Path("secrets/gemini_api_key.txt")
+MASTER_PORTFOLIO_FILE = INTERNAL_ROOT / "data/master_portfolio.md"
+API_KEY_FILE = INTERNAL_ROOT / "secrets/gemini_api_key.txt"
 MODEL_NAME = "gemini-2.5-flash"
 RESEARCH_MODEL_NAME = "gemini-2.5-flash"
 COMPILE_PDF = True
@@ -16,7 +17,8 @@ ENABLE_COMPANY_RESEARCH_SEARCH = False
 API_CALL_DELAY_SECONDS = 4.0
 AUTO_INSTALL_LATEX_ON_WINDOWS = True
 RESUME_TITLE = "Dylan's Resume"
-PROFILE_PHOTO_FILE = Path("assets/profile_photo/Me.jpg")
+PROFILE_PHOTO_FILE = INTERNAL_ROOT / "profile_photo/Me.jpg"
+PROFILE_PHOTO_ROTATION_DEGREES = 90
 
 settings = GeneratorSettings(
     applications_root=APPLICATIONS_ROOT,
@@ -34,6 +36,7 @@ settings = GeneratorSettings(
     auto_install_latex_on_windows=AUTO_INSTALL_LATEX_ON_WINDOWS,
     resume_title=RESUME_TITLE,
     profile_photo_file=PROFILE_PHOTO_FILE,
+    profile_photo_rotation_degrees=PROFILE_PHOTO_ROTATION_DEGREES,
 )
 
 if __name__ == "__main__":

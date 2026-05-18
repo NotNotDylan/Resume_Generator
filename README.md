@@ -3,17 +3,19 @@
 This repo generates tailored LaTeX resumes in batch from job folders under applications.
 The workflow is driven by main.py rather than command-line flags.
 
+Most support files are kept in the internal folder so the root stays focused on the user-facing workflow.
+
 ## Core workflow
-1. Put your API key in secrets/gemini_api_key.txt.
+1. Put your API key in internal/secrets/gemini_api_key.txt.
 2. Configure settings at the top of main.py.
-3. Fill data/master_portfolio.md with your personal master data.
+3. Fill internal/data/master_portfolio.md with your personal master data.
 4. Create one folder per job under applications.
 5. Run python main.py.
 
 ## Easiest PDF setup (Windows)
 If you want automatic PDF output from LaTeX, run this once:
 ```powershell
-./install_latex.ps1
+./internal/install_latex.ps1
 ```
 Then close and reopen PowerShell and run:
 ```powershell
@@ -34,23 +36,11 @@ If you skip this install:
 
 ## Local API key file
 Recommended local-only setup:
-1. Copy secrets/gemini_api_key.template.txt to secrets/gemini_api_key.txt
+1. Copy internal/secrets/gemini_api_key.template.txt to internal/secrets/gemini_api_key.txt
 2. Paste your raw API key on one line
 3. Keep that file local only
 
-The repo ignores secrets/gemini_api_key.txt in git.
-
-One-time terminal alternative:
-```powershell
-$env:GEMINI_API_KEY="YOUR_KEY_HERE"
-```
-
-Persistent Windows user environment alternative:
-```powershell
-setx GEMINI_API_KEY "YOUR_KEY_HERE"
-```
-
-Open a new terminal after setx.
+The repo ignores internal/secrets/gemini_api_key.txt in git.
 
 ## main.py configuration
 Use main.py to change:
@@ -127,15 +117,14 @@ Each active job output folder contains:
 - [resume title].tex
 - [resume title].pdf if compile_pdf is enabled and compilation succeeds
 - sections.json
-- compile.stdout.log when PDF compilation runs
-- compile.stderr.log when PDF compilation runs
+- ARCHIVE folder with versioned prior artifacts
 
 ## Template switching
-Put templates in templates and change SELECTED_TEMPLATE_NAME in main.py.
+Put templates in internal/templates and change SELECTED_TEMPLATE_NAME in main.py.
 The generator scans placeholders from the chosen template automatically.
 
 ## Profile photo
-Put a profile photo in assets/profile_photo and point PROFILE_PHOTO_FILE in main.py to it.
+Put a profile photo in internal/profile_photo and point PROFILE_PHOTO_FILE in main.py to it.
 The default template places it in the top-right header area.
 
 ## Notes
