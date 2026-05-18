@@ -51,6 +51,7 @@ Instruction: When selecting relevant coursework for a resume, prioritize subject
 
 ## Section C — Personal Experience Catalogue
 
+(This I did a thing experiance is by far the most impresive experiacne I have here and unless there is very good reason it should always be included)
 ### Product Development
 **I did a thing, YouTube · Part-time**
 May 2025 - Present

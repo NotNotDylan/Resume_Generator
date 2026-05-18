@@ -34,6 +34,11 @@
 \renewcommand{\cvItemMarker}{{\small\textbullet}}
 \renewcommand{\cvRatingMarker}{\faCircle}
 
+\newcommand{\ResumeProfilePhoto}[2]{%
+\renewcommand{\profilephotorotation}{#2}%
+\photoR{2.8cm}{#1}%
+}
+
 \newcommand{\ResumeTightItemize}[1]{%
 \begin{itemize}[label=\textbullet, nosep, leftmargin=*, topsep=0.25em, partopsep=0pt, parsep=0pt, itemsep=0.2em]
   #1

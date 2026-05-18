@@ -515,16 +515,35 @@ def safe_filename(name: str) -> str:
     return cleaned or "Resume"
 
 
+def resolve_template_file(settings: GeneratorSettings) -> Path:
+    requested = settings.selected_template_name.strip()
+    if not requested:
+        raise RuntimeError("No template selected. Set SELECTED_TEMPLATE_NAME in main.py.")
+
+    candidates = [requested]
+    if not requested.lower().endswith(".tex"):
+        candidates.append(f"{requested}.tex")
+
+    for candidate in candidates:
+        template_file = settings.templates_root / candidate
+        if template_file.exists():
+            return template_file
+
+    available_templates = sorted(path.name for path in settings.templates_root.glob("*.tex"))
+    available_text = ", ".join(available_templates) if available_templates else "no .tex templates found"
+    raise RuntimeError(
+        f"Template '{settings.selected_template_name}' was not found in {settings.templates_root}. "
+        f"Available templates: {available_text}."
+    )
+
+
 def build_profile_photo_block(settings: GeneratorSettings, output_dir: Path) -> str:
     if settings.profile_photo_file is None or not settings.profile_photo_file.exists():
         return ""
     target_name = f"profile_photo{settings.profile_photo_file.suffix}"
     target_path = output_dir / target_name
     shutil.copy2(settings.profile_photo_file, target_path)
-    return (
-        f"\\renewcommand{{\\profilephotorotation}}{{{settings.profile_photo_rotation_degrees}}}\\n"
-        f"\\photoR{{2.8cm}}{{{target_name}}}"
-    )
+    return f"\\ResumeProfilePhoto{{{target_name}}}{{{settings.profile_photo_rotation_degrees}}}"
 
 
 def build_static_placeholders(
@@ -819,7 +838,7 @@ def enforce_clean_output_contents(job_output_dir: Path, resume_title: str) -> No
 
 
 def load_template_text(settings: GeneratorSettings) -> str:
-    template_file = settings.templates_root / settings.selected_template_name
+    template_file = resolve_template_file(settings)
     return read_text(template_file)
 
 

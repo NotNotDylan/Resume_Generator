@@ -121,7 +121,12 @@ Each active job output folder contains:
 
 ## Template switching
 Put templates in internal/templates and change SELECTED_TEMPLATE_NAME in main.py.
+You can use either the full file name or the stem without `.tex`.
 The generator scans placeholders from the chosen template automatically.
+
+Included templates:
+- `modern_panel` for the new panel-style article layout
+- `template` for the existing AltaCV-based layout
 
 ## Profile photo
 Put a profile photo in internal/profile_photo and point PROFILE_PHOTO_FILE in main.py to it.
