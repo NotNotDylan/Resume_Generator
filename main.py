@@ -1,23 +1,26 @@
+import sys
 from pathlib import Path
-from internal.generate_resume import GeneratorSettings, run_batch
 
-# User configuration
-APPLICATIONS_ROOT = Path("applications")
-OUTPUTS_ROOT = Path("outputs")
-TEMPLATES_ROOT = Path("internal/templates")
-SELECTED_TEMPLATE_NAME = "template.tex"
-MASTER_PORTFOLIO_FILE = Path("internal/data/master_portfolio.md")
-API_KEY_FILE = Path("internal/secrets/gemini_api_key.txt")
-MODEL_NAME = "gemini-2.5-flash"
-RESEARCH_MODEL_NAME = "gemini-2.5-flash"
-COMPILE_PDF = True
-COMPILER = "xelatex"
-ENABLE_COMPANY_RESEARCH_SEARCH = False
-API_CALL_DELAY_SECONDS = 4.0
-AUTO_INSTALL_LATEX_ON_WINDOWS = True
-RESUME_TITLE = "Dylan's Resume"
-PROFILE_PHOTO_FILE = Path("internal/profile_photo/Me.jpg")
-PROFILE_PHOTO_ROTATION_DEGREES = 90
+from PyQt6.QtWidgets import QApplication
+
+from internal.gui.app import MainWindow
+
+
+def main() -> None:
+    app = QApplication(sys.argv)
+    app.setApplicationName("Resume Generator")
+
+    qss_path = Path(__file__).parent / "internal" / "gui" / "styles" / "theme.qss"
+    if qss_path.exists():
+        app.setStyleSheet(qss_path.read_text(encoding="utf-8"))
+
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
+
+
+if __name__ == "__main__":
+    main()
 
 settings = GeneratorSettings(
     applications_root=APPLICATIONS_ROOT,

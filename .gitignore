@@ -13,3 +13,4 @@ outputs/*
 *.toc
 *.fls
 *.fdb_latexmk
+.vscode
