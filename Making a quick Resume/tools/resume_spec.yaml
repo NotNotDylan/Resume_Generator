@@ -1,0 +1,111 @@
+# Canonical design spec extracted from Dylan_General_Resume.html
+# Used by compare_html_typst.py — update when HTML CSS changes.
+
+layout:
+  page.width: "210mm"
+  page.paper: "a4"
+  page.margin: "0"
+  grid.columns: ["68mm", "1fr"]
+  header.grid.columns: ["68mm", "1fr"]
+  header.padding: "22px 26px 18px"
+  header.accent_bar.height: "3px"
+  header.name.padding-right: "16px"
+  header.title.padding-bottom: "6px"
+  aside.padding: "20px 18px 24px"
+  main.padding: "20px 22px 24px 20px"
+
+colors:
+  ink: "#0f1923"
+  ink-mid: "#3a4a5a"
+  ink-light: "#6b7f8f"
+  accent: "#0b6e70"
+  accent-soft: "#e6f4f4"
+  rule: "#c9d6da"
+  page: "#ffffff"
+  sidebar: "#f4f7f8"
+  header.role: "#a8c8ca"
+  chip.border: "#9ecfd0"
+
+fonts:
+  body: "Lato"
+  header.name: "Cormorant Garamond"
+  mono: "JetBrains Mono"
+
+typography:
+  body.size: "9.2pt"
+  body.line-height: "1.5"
+  header.name.size: "28pt"
+  header.name.weight: "600"
+  header.name.letter-spacing: "-0.5px"
+  header.name.line-height: "1"
+  header.name.margin-bottom: "3px"
+  header.pronouns.size: "7pt"
+  header.pronouns.color: "rgba(255,255,255,0.45)"
+  header.role.size: "8.5pt"
+  header.role.weight: "500"
+  header.role.margin-bottom: "8px"
+  header.contact.size: "7.8pt"
+  header.contact.gap: "4px 18px"
+  section-label.size: "6.8pt"
+  section-label.weight: "500"
+  section-label.letter-spacing: "1.8px"
+  section-label.margin-bottom: "7px"
+  section-label.padding-bottom: "4px"
+  section-label.border-bottom: "1px solid"
+  section.margin-bottom: "16px"
+  edu.inst.size: "8.5pt"
+  edu.degree.size: "8pt"
+  edu.dates.size: "7pt"
+  metric-chip.size: "7pt"
+  metric-chip.padding: "2px 6px"
+  metric-chip.radius: "3px"
+  skill-group.margin-bottom: "9px"
+  skill-group-name.size: "7.5pt"
+  skill-tags.gap: "3px"
+  tag.size: "7.5pt"
+  tag.padding: "2px 6px"
+  cert-name.size: "8pt"
+  cert-issuer.size: "7.5pt"
+  profile.size: "8.8pt"
+  profile.line-height: "1.6"
+  profile.border-left: "2px solid"
+  profile.padding-left: "10px"
+  exp-item.margin-bottom: "11px"
+  exp-title.size: "9pt"
+  exp-dates.size: "7pt"
+  exp-org.size: "8pt"
+  exp-bullet.size: "8.3pt"
+  exp-bullet.line-height: "1.5"
+  exp-bullet.padding-left: "10px"
+  exp-header.gap: "6px"
+  project-item.margin-bottom: "9px"
+  project-item.padding: "8px 10px"
+  project-name.size: "8.8pt"
+  project-grade.size: "7pt"
+  project-grade.padding: "1px 5px"
+  project-bullet.size: "8pt"
+  course-name.size: "7.8pt"
+  course-grade.size: "6.8pt"
+  course-item.gap: "4px"
+  course-item.margin-bottom: "4px"
+
+sections:
+  - Education
+  - Relevant Coursework
+  - Technical Skills
+  - Certifications
+  - Awards
+  - Profile
+  - Relevant Experience
+  - Key Technical Projects
+  - Leadership & Outreach
+
+# Typst mapping hints — where to find each spec value in the .typ file
+typst_map:
+  colors.ink: '#let ink = rgb("#0f1923")'
+  colors.accent: '#let accent = rgb("#0b6e70")'
+  layout.grid.columns: 'columns: (68mm, 1fr)'
+  fonts.body: '#set text(font: lato'
+  fonts.mono: '#let mono = "JetBrains Mono"'
+  typography.section-label.size: 'section-label'
+  typography.body.size: '#set text(font:'

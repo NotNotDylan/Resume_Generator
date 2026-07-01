@@ -1,0 +1,124 @@
+{
+  "passed": false,
+  "overall_diff_pct": 21.746698789862805,
+  "tolerance_pct": 2.0,
+  "a4_expected_px": {
+    "width": 1240,
+    "height": 1754
+  },
+  "html_render": {
+    "source": "html",
+    "path": "C:\\git\\Resume_Generator\\Making a quick Resume\\tools\\output\\html_render.png",
+    "width_px": 1240,
+    "height_px": 1754,
+    "dpi": 150,
+    "page_count": 1,
+    "a4_valid": true,
+    "aspect_ratio": 0.7069555302166477,
+    "notes": [
+      "PDF page size: 595.0x841.9pt (expect ~595x842pt)"
+    ]
+  },
+  "pdf_render": {
+    "source": "typst_pdf",
+    "path": "C:\\git\\Resume_Generator\\Making a quick Resume\\tools\\output\\pdf_render.png",
+    "width_px": 1240,
+    "height_px": 1754,
+    "dpi": 150,
+    "page_count": 1,
+    "a4_valid": true,
+    "aspect_ratio": 0.7069555302166477,
+    "notes": [
+      "PDF page size: 595.3x841.9pt (expect ~595x842pt)"
+    ]
+  },
+  "regions": [
+    {
+      "name": "header_full",
+      "diff_pct": 29.617666722380076,
+      "bbox": [
+        0,
+        0,
+        1240,
+        193
+      ]
+    },
+    {
+      "name": "sidebar",
+      "diff_pct": 18.530505703385696,
+      "bbox": [
+        0,
+        193,
+        402,
+        1754
+      ]
+    },
+    {
+      "name": "main",
+      "diff_pct": 21.849557914500068,
+      "bbox": [
+        402,
+        193,
+        1240,
+        1754
+      ]
+    },
+    {
+      "name": "header_name",
+      "diff_pct": 28.289897661949322,
+      "bbox": [
+        0,
+        0,
+        402,
+        193
+      ]
+    },
+    {
+      "name": "header_contact",
+      "diff_pct": 30.25461560339817,
+      "bbox": [
+        402,
+        0,
+        1240,
+        193
+      ]
+    }
+  ],
+  "advice": [
+    {
+      "region": "header",
+      "severity": "high",
+      "issue": "Header band differs 29.6% - likely padding, font size, or bottom accent line",
+      "typst_hint": "Match header inset to CSS padding:22px 26px 18px - use inset:(top:16.5pt,right:19.5pt,bottom:13.5pt,left:19.5pt) OR keep 22pt if intentionally matching screen px numerals. Verify #grid align:(left+top,left+bottom) on header inner grid. Accent bar: stroke:(bottom:3pt+accent) on header block.",
+      "reference": "HTML header padding=22px 26px 18px, h1 size=28pt"
+    },
+    {
+      "region": "header_contact",
+      "severity": "high",
+      "issue": "Role/contact row differs 30.3% - mono font, spacing, or wrap",
+      "typst_hint": "Role: font:mono, size:8.5pt, weight:medium. Contact row: h(18pt) gap between items. Ensure header right column uses align bottom not #v(1fr) which expands header to full page.",
+      "reference": "HTML .header-title .role 8.5pt, .header-contact gap 4px 18px"
+    },
+    {
+      "region": "sidebar",
+      "severity": "high",
+      "issue": "Sidebar differs 18.5% - section spacing, tags, or coursework rows",
+      "typst_hint": "Check section-label spacing (margin-bottom:7px, padding-bottom:4px in CSS). Use #section with block(below:16pt). Skill tags need inline wrap: box with h(3pt) gaps. Course rows: grid columns (1fr, auto) with 4pt gutter. Aside padding CSS 20px 18px 24px - convert px to pt (x0.75) for print accuracy.",
+      "reference": "HTML aside padding=20px 18px 24px, .section margin-bottom 16px"
+    },
+    {
+      "region": "main",
+      "severity": "high",
+      "issue": "Main column differs 21.8% - experience blocks, projects, or profile",
+      "typst_hint": "Profile: stroke left 2pt + accent, inset left 10pt, text 8.8pt leading 1.6em. Experience: exp-item margin-bottom 11pt; highlighted box fill accent-soft with 9pt/11pt inset. Projects: box fill sidebar-bg, stroke left 2.5pt + accent. All #for loop bodies inside [...] must use # prefix on function calls.",
+      "reference": "HTML main padding 20px 22px 24px 20px, .exp-item margin-bottom 11px"
+    },
+    {
+      "region": "global",
+      "severity": "high",
+      "issue": "Overall pixel diff 21.7% - documents are visually distinct",
+      "typst_hint": "Work region-by-region using tools/output/visual_diff.png (red = mismatch). Recompile after each fix: typst compile Dylan_General_Resume.typ Dylan_General_Resume.pdf --root . --font-path fonts. Re-run: python tools/compare_html_typst.py",
+      "reference": "Open tools/output/html_render.png vs pdf_render.png side by side"
+    }
+  ]
+}

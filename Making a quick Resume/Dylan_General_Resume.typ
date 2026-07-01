@@ -9,37 +9,44 @@
 #let rule-color  = rgb("#c9d6da")
 #let sidebar-bg  = rgb("#f4f7f8")
 
-#let lato    = "Lato"
+#let lato     = "Lato"
 #let garamond = "Cormorant Garamond"
-#let mono    = "JetBrains Mono"
+#let mono     = "JetBrains Mono"
 
 #set page(paper: "a4", margin: 0pt)
 #set text(font: lato, size: 9.2pt, fill: ink, lang: "en")
 #set par(leading: 1.5em, justify: false, spacing: 0pt)
 
+// CSS px → print pt (96dpi CSS px × 0.75 = 72dpi pt)
+#let px(n) = n * 0.75pt
+
 // ── Helpers (CSS-matched) ─────────────────────────────────────────────────────
 
 #let section-label(title) = {
-  block(spacing: 7pt, below: 7pt)[
-    text(
+  block(below: px(7))[
+    #text(
       font: mono,
       size: 6.8pt,
       weight: "medium",
       fill: accent,
-      tracking: 1.8pt,
+      tracking: px(1.8),
     )[#upper(title)]
-    v(4pt)
-    line(length: 100%, stroke: 1pt + accent)
+    #v(px(4))
+    #line(length: 100%, stroke: 0.75pt + accent)
   ]
 }
 
-#let section(body) = block(below: 16pt, body)
+#let section(body) = {
+  block(below: px(16))[
+    #body
+  ]
+}
 
 #let metric-chip(content) = box(
   fill: accent-soft,
   stroke: 0.5pt + rgb("#9ecfd0"),
-  radius: 3pt,
-  inset: (top: 2pt, bottom: 2pt, left: 6pt, right: 6pt),
+  radius: px(3),
+  inset: (top: px(2), bottom: px(2), left: px(6), right: px(6)),
 )[
   #text(font: mono, size: 7pt, weight: "medium", fill: accent)[#content]
 ]
@@ -47,8 +54,8 @@
 #let tag(content, highlight: false) = box(
   fill: if highlight { accent-soft } else { white },
   stroke: 0.5pt + if highlight { rgb("#9ecfd0") } else { rule-color },
-  radius: 3pt,
-  inset: (top: 2pt, bottom: 2pt, left: 6pt, right: 6pt),
+  radius: px(3),
+  inset: (top: px(2), bottom: px(2), left: px(6), right: px(6)),
 )[
   #text(
     size: 7.5pt,
@@ -57,53 +64,55 @@
   )[#content]
 ]
 
-#let skill-tags(..items) = box(width: 100%, inset: 0pt)[
-  #for (i, item) in items.pos().enumerate() {
-    if i > 0 { h(3pt) }
-    tag(..item)
+#let skill-tags(items, highlights) = [
+  #set par(spacing: px(3), leading: 0.7em)
+  #for (i, item) in items.enumerate() {
+    box(outset: (right: px(3), bottom: px(3)))[
+      #tag(item, highlight: i in highlights)
+    ]
   }
 ]
 
-#let exp-bullet(body) = block(below: 2pt)[
+#let exp-bullet(body) = block(below: px(2))[
   #grid(
-    columns: (10pt, 1fr),
+    columns: (px(10), 1fr),
     column-gutter: 0pt,
     align: (left + top, left + top),
-    text(fill: accent, weight: "bold")[›],
-    text(size: 8.3pt, fill: ink-mid)[#body],
+    [#text(fill: accent, weight: "bold")[›]],
+    [#text(size: 8.3pt, fill: ink-mid)[#body]],
   )
 ]
 
 #let project-bullet(body) = block(below: 0pt)[
   #grid(
-    columns: (10pt, 1fr),
+    columns: (px(10), 1fr),
     column-gutter: 0pt,
     align: (left + top, left + top),
-    pad(left: 1pt)[text(fill: accent, weight: "bold", size: 11pt)[·]],
-    text(size: 8pt, fill: ink-mid)[#body],
+    pad(left: px(1))[#text(fill: accent, weight: "bold", size: 11pt)[·]],
+    [#text(size: 8pt, fill: ink-mid)[#body]],
   )
 ]
 
-#let exp-header(title, dates, title-size: 9pt) = {
-  grid(
+#let exp-header(title, dates, title-size: 9pt) = [
+  #grid(
     columns: (1fr, auto),
-    column-gutter: 6pt,
+    column-gutter: px(6),
     align: (left + horizon, right + horizon),
-    text(weight: "bold", size: title-size, fill: ink)[#title],
-    text(font: mono, size: 7pt, fill: ink-light)[#dates],
+    [#text(weight: "bold", size: title-size, fill: ink)[#title]],
+    [#text(font: mono, size: 7pt, fill: ink-light)[#dates]],
   )
-  v(2pt)
-}
+  #v(px(2))
+]
 
-#let exp-org(content, size: 8pt) = block(below: 4pt)[
+#let exp-org(content, size: 8pt) = block(below: px(4))[
   #text(fill: accent, weight: "bold", size: size)[#content]
 ]
 
 #let project-grade(content) = box(
   fill: accent-soft,
   stroke: 0.5pt + rgb("#9ecfd0"),
-  radius: 3pt,
-  inset: (top: 1pt, bottom: 1pt, left: 5pt, right: 5pt),
+  radius: px(3),
+  inset: (top: px(1), bottom: px(1), left: px(5), right: px(5)),
 )[
   #text(font: mono, size: 7pt, weight: "medium", fill: accent)[#content]
 ]
@@ -121,47 +130,47 @@
       #block(
         width: 100%,
         fill: ink,
-        inset: (top: 22pt, right: 26pt, bottom: 18pt, left: 26pt),
-        stroke: (bottom: 3pt + accent),
+        inset: (top: px(22), right: px(26), bottom: px(18), left: px(26)),
+        stroke: (bottom: px(3) + accent),
       )[
         #grid(
           columns: (68mm, 1fr),
           column-gutter: 0pt,
           align: (left + top, left + bottom),
-          pad(right: 16pt)[
+          pad(right: px(16))[
             #text(
               font: garamond,
               size: 28pt,
               weight: "semibold",
               fill: white,
-              tracking: -0.5pt,
+              tracking: px(-0.5),
             )[Dylan Bitar]
-            #v(3pt)
+            #v(px(3))
             #text(
               font: mono,
               size: 7pt,
               fill: rgb("#ffffff73"),
-              tracking: 0.5pt,
+              tracking: px(0.5),
             )[HE / HIM]
           ],
-          pad(bottom: 6pt)[
+          pad(bottom: px(6))[
             #text(
               font: mono,
               size: 8.5pt,
               weight: "medium",
               fill: rgb("#a8c8ca"),
-              tracking: 0.3pt,
-            )[Mechatronics Engineering (Hons) · UTS  |  Sensing & Embedded Systems]
-            #v(8pt)
+              tracking: px(0.3),
+            )[Mechatronics Engineering (Hons) · UTS | Sensing & Embedded Systems]
+            #v(px(8))
             #box(inset: 0pt)[
               #for (i, item) in (
-                "possibly.a.dylan\@gmail.com",
+                "possibly.a.dylan@gmail.com",
                 "linkedin.com/in/dylan-bitar",
                 "Student No. 25308685",
               ).enumerate() {
-                if i > 0 { h(18pt) }
+                if i > 0 { h(px(18)) }
                 text(size: 7.8pt, fill: rgb("#ffffffa6"))[
-                  #text(fill: accent, weight: "bold")[▪]#h(4pt)#item
+                  #text(fill: accent, weight: "bold")[▪]#h(px(4))#item
                 ]
               }
             ]
@@ -175,30 +184,32 @@
       width: 100%,
       fill: sidebar-bg,
       stroke: (right: 0.5pt + rule-color),
-      inset: (top: 20pt, right: 18pt, bottom: 24pt, left: 18pt),
+      inset: (top: px(20), right: px(18), bottom: px(24), left: px(18)),
     )[
       #section[
         #section-label("Education")
-        #block(below: 10pt)[
+        #block(below: px(10))[
           #text(weight: "bold", size: 8.5pt)[University of Technology Sydney]
+          #v(px(1))
           #block(spacing: 0pt)[
             #set par(leading: 1.4em, spacing: 0pt)
             #text(size: 8pt, fill: ink-mid)[
-            B.Eng (Hons) / Dip. Professional Engineering Practice \
-            Major: Mechatronic Engineering
+              B.Eng (Hons) / Dip. Professional Engineering Practice \
+              Major: Mechatronic Engineering
             ]
           ]
-          #v(1pt)
+          #v(px(2))
           #text(font: mono, size: 7pt, fill: ink-light)[Jan 2024 – Nov 2029 (expected)]
-          #v(4pt)
+          #v(px(4))
           #box(inset: 0pt)[
             #metric-chip[WAM 81.12]
-            #h(8pt)
+            #h(px(8))
             #metric-chip[GPA 5.92]
           ]
         ]
         #block(below: 0pt)[
           #text(weight: "bold", size: 8.5pt)[St Mary's Cathedral College]
+          #v(px(1))
           #block(spacing: 0pt)[
             #set par(leading: 1.4em, spacing: 0pt)
             #text(size: 8pt, fill: ink-mid)[
@@ -206,7 +217,7 @@
               1st — Engineering Studies, Sydney Catholic Schools
             ]
           ]
-          #v(1pt)
+          #v(px(2))
           #text(font: mono, size: 7pt, fill: ink-light)[ATAR 88.9 | 2022–2023]
         ]
       ]
@@ -221,13 +232,13 @@
           ("Intro to Mechatronics Engineering", "HD"),
           ("Engineering Project Appraisal", "D · 76"),
         ) {
-          block(below: 4pt)[
-            grid(
+          block(below: px(4))[
+            #grid(
               columns: (1fr, auto),
-              column-gutter: 4pt,
+              column-gutter: px(4),
               align: (left + horizon, right + horizon),
-              text(size: 7.8pt, fill: ink-mid)[#name],
-              text(font: mono, size: 6.8pt, weight: "medium", fill: accent)[#grade],
+              [#text(size: 7.8pt, fill: ink-mid)[#name]],
+              [#text(font: mono, size: 6.8pt, weight: "medium", fill: accent)[#grade]],
             )
           ]
         }
@@ -257,10 +268,10 @@
             (),
           ),
         ) {
-          block(below: 9pt)[
-            text(weight: "bold", size: 7.5pt, fill: ink-mid, tracking: 0.5pt)[#upper(group)]
-            v(4pt)
-            skill-tags(..items.enumerate().map(((i, item)) => (item, i in highlights)))
+          block(below: px(9))[
+            #text(weight: "bold", size: 7.5pt, fill: ink-mid, tracking: px(0.5))[#upper(group)]
+            #v(px(4))
+            #skill-tags(items, highlights)
           ]
         }
       ]
@@ -273,9 +284,11 @@
           ("First Aid & CPR / BLS", "Current certification"),
           ("General Construction Induction (White Card)", "SafeWork NSW"),
         ) {
-          block(below: 6pt)[
-            text(weight: "bold", size: 8pt, fill: ink)[#name]
-            text(size: 7.5pt, fill: ink-light)[#issuer]
+          block(below: px(6))[
+            #text(weight: "bold", size: 8pt, fill: ink)[#name]
+            #block(spacing: 0pt)[
+              #text(size: 7.5pt, fill: ink-light)[#issuer]
+            ]
           ]
         }
       ]
@@ -287,9 +300,11 @@
           ("Rookie of the Year", "UTS Motorsports Autonomous · 2024"),
           ("1st Place — Engineering Studies", "Sydney Catholic Schools · 2023"),
         ) {
-          block(below: 6pt)[
-            text(weight: "bold", size: 8pt, fill: ink)[#name]
-            text(size: 7.5pt, fill: ink-light)[#issuer]
+          block(below: px(6))[
+            #text(weight: "bold", size: 8pt, fill: ink)[#name]
+            #block(spacing: 0pt)[
+              #text(size: 7.5pt, fill: ink-light)[#issuer]
+            ]
           ]
         }
       ]
@@ -298,13 +313,13 @@
     // ── MAIN (main) ─────────────────────────────────────────────────────────
     block(
       width: 100%,
-      inset: (top: 20pt, right: 22pt, bottom: 24pt, left: 20pt),
+      inset: (top: px(20), right: px(22), bottom: px(24), left: px(20)),
     )[
       #section[
         #section-label("Profile")
         #block(
-          stroke: (left: 2pt + accent),
-          inset: (left: 10pt),
+          stroke: (left: px(2) + accent),
+          inset: (left: px(10)),
         )[
           #block(spacing: 0pt)[
             #set par(leading: 1.6em, spacing: 0pt)
@@ -318,13 +333,13 @@
       #section[
         #section-label("Relevant Experience")
 
-        #block(below: 13pt)[
+        #block(below: px(13))[
           #box(
             width: 100%,
             fill: accent-soft,
             stroke: 1pt + rgb("#9ecfd0"),
-            radius: 4pt,
-            inset: (top: 9pt, right: 11pt, bottom: 9pt, left: 11pt),
+            radius: px(4),
+            inset: (top: px(9), right: px(11), bottom: px(9), left: px(11)),
           )[
             #exp-header("Product Development Engineer", "May 2025 – Present", title-size: 9.5pt)
             #text(fill: accent, weight: "bold", size: 8.5pt)[
@@ -332,19 +347,19 @@
               #h(0.35em)
               #box(
                 fill: accent,
-                radius: 3pt,
-                inset: (top: 1pt, bottom: 1pt, left: 6pt, right: 6pt),
+                radius: px(3),
+                inset: (top: px(1), bottom: px(1), left: px(6), right: px(6)),
               )[
                 #text(
                   font: mono,
                   size: 6.8pt,
                   weight: "medium",
                   fill: white,
-                  tracking: 0.5pt,
+                  tracking: px(0.5),
                 )[5.6M+ SUBSCRIBERS]
               ]
             ]
-            #v(5pt)
+            #v(px(5))
             #exp-bullet[Sole engineer delivering 10+ functional prototypes for one of YouTube's largest engineering channels — averaging just 30 working hours per complete project cycle (ideation → sourcing → fabrication → iteration).]
             #exp-bullet[Designed and built a wearable flotation device with integrated sail mechanism; produced an autonomous CO₂-actuated projectile system — both requiring rigorous sensor and actuator integration.]
             #exp-bullet[Full engineering autonomy across every stage; all prototypes built to withstand hours of repeated takes during professional filming.]
@@ -382,12 +397,12 @@
             8pt,
           ),
         ) {
-          block(below: 11pt)[
-            exp-header(title, dates)
-            exp-org(org, size: org-size)
-            for bullet in bullets {
-              exp-bullet(bullet)
-            }
+          block(below: px(11))[
+            #exp-header(title, dates)
+            #exp-org(org, size: org-size)
+            #for bullet in bullets [
+              #exp-bullet(bullet)
+            ]
           ]
         }
       ]
@@ -419,25 +434,25 @@
             ),
           ),
         ) {
-          block(below: 9pt)[
-            box(
+          block(below: px(9))[
+            #box(
               width: 100%,
               fill: sidebar-bg,
-              stroke: (left: 2.5pt + accent),
-              radius: (top-right: 3pt, bottom-right: 3pt),
-              inset: (top: 8pt, right: 10pt, bottom: 8pt, left: 10pt),
+              stroke: (left: px(2.5) + accent),
+              radius: (top-right: px(3), bottom-right: px(3)),
+              inset: (top: px(8), right: px(10), bottom: px(8), left: px(10)),
             )[
-              grid(
+              #grid(
                 columns: (1fr, auto),
-                column-gutter: 6pt,
+                column-gutter: px(6),
                 align: (left + horizon, right + horizon),
-                text(weight: "bold", size: 8.8pt, fill: ink)[#name],
-                project-grade(grade),
+                [#text(weight: "bold", size: 8.8pt, fill: ink)[#name]],
+                [#project-grade(grade)],
               )
-              v(3pt)
-              for bullet in bullets {
-                project-bullet(bullet)
-              }
+              #v(px(3))
+              #for bullet in bullets [
+                #project-bullet(bullet)
+              ]
             ]
           ]
         }
@@ -445,15 +460,15 @@
 
       #section[
         #section-label("Leadership & Outreach")
-        #block(below: 5pt)[
-          exp-header("Vice President", "Jun 2024 – Nov 2025")
-          exp-org("UTS Aerial Society")
-          exp-bullet[Co-founded and governed a new UTS society, managing operations, membership, and event logistics alongside academic commitments.]
+        #block(below: px(5))[
+          #exp-header("Vice President", "Jun 2024 – Nov 2025")
+          #exp-org("UTS Aerial Society")
+          #exp-bullet[Co-founded and governed a new UTS society, managing operations, membership, and event logistics alongside academic commitments.]
         ]
         #block(below: 0pt)[
-          exp-header("General Committee — STEM Outreach", "Mar – Oct 2024")
-          exp-org("Engineers Without Borders, UTS Chapter")
-          exp-bullet[Organised and delivered hands-on engineering workshops to 400+ students across regional NSW (Wagga Wagga) and metropolitan schools; led outreach to Colyton High School independently.]
+          #exp-header("General Committee — STEM Outreach", "Mar – Oct 2024")
+          #exp-org("Engineers Without Borders, UTS Chapter")
+          #exp-bullet[Organised and delivered hands-on engineering workshops to 400+ students across regional NSW (Wagga Wagga) and metropolitan schools; led outreach to Colyton High School independently.]
         ]
       ]
     ],
