@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dylan Bitar — Resume</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=JetBrains+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0f1923;
+    --ink-mid: #3a4a5a;
+    --ink-light: #6b7f8f;
+    --accent: #0b6e70;
+    --accent-soft: #e6f4f4;
+    --rule: #c9d6da;
+    --page: #ffffff;
+    --sidebar: #f4f7f8;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    font-size: 9.2pt;
+    color: var(--ink);
+    background: #e8edf0;
+    line-height: 1.5;
+  }
+
+  .page {
+    width: 210mm;
+    min-height: 297mm;
+    background: var(--page);
+    margin: 20px auto;
+    display: grid;
+    grid-template-columns: 68mm 1fr;
+    grid-template-rows: auto 1fr;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.12);
+  }
+
+  /* ── HEADER ── */
+  header {
+    grid-column: 1 / -1;
+    background: var(--ink);
+    padding: 22px 26px 18px;
+    display: grid;
+    grid-template-columns: 68mm 1fr;
+    gap: 0;
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+
+  .header-name {
+    grid-column: 1;
+    padding-right: 16px;
+  }
+
+  .header-name h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 28pt;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 3px;
+  }
+
+  .header-name .pronouns {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7pt;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .header-title {
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding-bottom: 6px;
+  }
+
+  .header-title .role {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8.5pt;
+    color: #a8c8ca;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .header-contact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 18px;
+  }
+
+  .header-contact span {
+    font-size: 7.8pt;
+    color: rgba(255,255,255,0.65);
+  }
+
+  .header-contact .dot {
+    color: var(--accent);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    background: var(--sidebar);
+    padding: 20px 18px 24px;
+    border-right: 0.5px solid var(--rule);
+  }
+
+  /* ── MAIN ── */
+  main {
+    padding: 20px 22px 24px 20px;
+  }
+
+  /* ── SECTION HEADINGS ── */
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 6.8pt;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--accent);
+  }
+
+  .section { margin-bottom: 16px; }
+
+  /* ── SIDEBAR: EDUCATION ── */
+  .edu-item { margin-bottom: 10px; }
+  .edu-item .inst {
+    font-weight: 700;
+    font-size: 8.5pt;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .edu-item .degree {
+    font-size: 8pt;
+    color: var(--ink-mid);
+    line-height: 1.4;
+    margin-top: 1px;
+  }
+  .edu-item .dates {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7pt;
+    color: var(--ink-light);
+    margin-top: 2px;
+  }
+  .edu-item .metrics {
+    margin-top: 4px;
+    display: flex;
+    gap: 8px;
+  }
+  .metric-chip {
+    background: var(--accent-soft);
+    border: 0.5px solid #9ecfd0;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7pt;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── SIDEBAR: SKILLS ── */
+  .skill-group { margin-bottom: 9px; }
+  .skill-group-name {
+    font-weight: 700;
+    font-size: 7.5pt;
+    color: var(--ink-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+  }
+  .tag {
+    background: #fff;
+    border: 0.5px solid var(--rule);
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 7.5pt;
+    color: var(--ink-mid);
+  }
+  .tag.highlight {
+    background: var(--accent-soft);
+    border-color: #9ecfd0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── SIDEBAR: CERTS ── */
+  .cert-item {
+    margin-bottom: 6px;
+  }
+  .cert-item .cert-name {
+    font-size: 8pt;
+    color: var(--ink);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .cert-item .cert-issuer {
+    font-size: 7.5pt;
+    color: var(--ink-light);
+  }
+
+  /* ── MAIN: PROFILE ── */
+  .profile-text {
+    font-size: 8.8pt;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    border-left: 2px solid var(--accent);
+    padding-left: 10px;
+  }
+
+  /* ── MAIN: EXPERIENCE ── */
+  .exp-item { margin-bottom: 11px; }
+
+  .exp-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 2px;
+  }
+
+  .exp-title {
+    font-weight: 700;
+    font-size: 9pt;
+    color: var(--ink);
+  }
+
+  .exp-dates {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7pt;
+    color: var(--ink-light);
+    white-space: nowrap;
+  }
+
+  .exp-org {
+    font-size: 8pt;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .exp-bullets {
+    list-style: none;
+    padding: 0;
+  }
+
+  .exp-bullets li {
+    font-size: 8.3pt;
+    color: var(--ink-mid);
+    line-height: 1.5;
+    padding-left: 10px;
+    position: relative;
+    margin-bottom: 2px;
+  }
+
+  .exp-bullets li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* ── MAIN: PROJECTS ── */
+  .project-item {
+    margin-bottom: 9px;
+    padding: 8px 10px;
+    background: var(--sidebar);
+    border-left: 2.5px solid var(--accent);
+    border-radius: 0 3px 3px 0;
+  }
+
+  .project-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+
+  .project-name {
+    font-weight: 700;
+    font-size: 8.8pt;
+    color: var(--ink);
+  }
+
+  .project-grade {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 7pt;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 0.5px solid #9ecfd0;
+    border-radius: 3px;
+    padding: 1px 5px;
+  }
+
+  .project-bullets {
+    list-style: none;
+    padding: 0;
+  }
+
+  .project-bullets li {
+    font-size: 8pt;
+    color: var(--ink-mid);
+    line-height: 1.5;
+    padding-left: 10px;
+    position: relative;
+  }
+
+  .project-bullets li::before {
+    content: '·';
+    position: absolute;
+    left: 1px;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 11pt;
+    line-height: 1.2;
+  }
+
+  /* ── SIDEBAR: COURSES ── */
+  .course-item {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 4px;
+    margin-bottom: 4px;
+    align-items: baseline;
+  }
+  .course-name {
+    font-size: 7.8pt;
+    color: var(--ink-mid);
+    line-height: 1.4;
+  }
+  .course-grade {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 6.8pt;
+    color: var(--accent);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  @media print {
+    body { background: none; }
+    .page {
+      margin: 0;
+      box-shadow: none;
+      width: 100%;
+      min-height: 100vh;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ══════════ HEADER ══════════ -->
+  <header>
+    <div class="header-name">
+      <h1>Dylan Bitar</h1>
+      <div class="pronouns">he / him</div>
+    </div>
+    <div class="header-title">
+      <div class="role">Mechatronics Engineering (Hons) · UTS &nbsp;|&nbsp; Sensing &amp; Embedded Systems</div>
+      <div class="header-contact">
+        <span><span class="dot">▪</span>possibly.a.dylan@gmail.com</span>
+        <span><span class="dot">▪</span>linkedin.com/in/dylan-bitar</span>
+        <span><span class="dot">▪</span>Student No. 25308685</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <aside>
+
+    <!-- Education -->
+    <div class="section">
+      <div class="section-label">Education</div>
+
+      <div class="edu-item">
+        <div class="inst">University of Technology Sydney</div>
+        <div class="degree">B.Eng (Hons) / Dip. Professional Engineering Practice<br>Major: Mechatronic Engineering</div>
+        <div class="dates">Jan 2024 – Nov 2029 (expected)</div>
+        <div class="metrics">
+          <span class="metric-chip">WAM 81.12</span>
+          <span class="metric-chip">GPA 5.92</span>
+        </div>
+      </div>
+
+      <div class="edu-item">
+        <div class="inst">St Mary's Cathedral College</div>
+        <div class="degree">High School Diploma<br>1st — Engineering Studies, Sydney Catholic Schools</div>
+        <div class="dates">ATAR 88.9 &nbsp;|&nbsp; 2022–2023</div>
+      </div>
+    </div>
+
+    <!-- Relevant Coursework -->
+    <div class="section">
+      <div class="section-label">Relevant Coursework</div>
+
+      <div class="course-item">
+        <span class="course-name">Sensors &amp; Control for Mechatronic Systems</span>
+        <span class="course-grade">D · 82</span>
+      </div>
+      <div class="course-item">
+        <span class="course-name">Embedded Mechatronics Systems</span>
+        <span class="course-grade">HD</span>
+      </div>
+      <div class="course-item">
+        <span class="course-name">Programming 1 (Python &amp; fundamentals)</span>
+        <span class="course-grade">HD · 92</span>
+      </div>
+      <div class="course-item">
+        <span class="course-name">Industrial Robotics (6-DOF simulation &amp; control)</span>
+        <span class="course-grade">D</span>
+      </div>
+      <div class="course-item">
+        <span class="course-name">Intro to Mechatronics Engineering</span>
+        <span class="course-grade">HD</span>
+      </div>
+      <div class="course-item">
+        <span class="course-name">Engineering Project Appraisal</span>
+        <span class="course-grade">D · 76</span>
+      </div>
+      <div style="margin-top:6px; padding: 4px 7px; background:#fff; border: 0.5px solid var(--rule); border-radius:3px;">
+        <div style="font-size:7pt; color:var(--ink-light); font-family:'JetBrains Mono',monospace; margin-bottom:3px;">Currently enrolled</div>
+        <div style="font-size:7.5pt; color:var(--ink-mid); line-height:1.5;">Embedded Mechatronics Studio · Dynamic Systems &amp; Control A · Programming for Mechatronic Systems · Robotics Studio 1</div>
+      </div>
+    </div>
+
+    <!-- Technical Skills -->
+    <div class="section">
+      <div class="section-label">Technical Skills</div>
+
+      <div class="skill-group">
+        <div class="skill-group-name">Sensing &amp; Signal Processing</div>
+        <div class="skill-tags">
+          <span class="tag highlight">Sensor Integration</span>
+          <span class="tag highlight">Time-of-Flight</span>
+          <span class="tag highlight">Analogue Filtering</span>
+          <span class="tag highlight">Heart Rate Sensing</span>
+          <span class="tag">Control Systems</span>
+          <span class="tag">PID</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-name">Programming</div>
+        <div class="skill-tags">
+          <span class="tag highlight">Python</span>
+          <span class="tag highlight">C / Embedded C</span>
+          <span class="tag">STM32CubeIDE</span>
+          <span class="tag">MATLAB</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-name">Hardware &amp; Embedded</div>
+        <div class="skill-tags">
+          <span class="tag highlight">STM32 Microcontrollers</span>
+          <span class="tag highlight">Altium PCB Design</span>
+          <span class="tag">SMD Soldering (0402)</span>
+          <span class="tag">Fusion 360</span>
+          <span class="tag">SolidWorks</span>
+        </div>
+      </div>
+
+      <div class="skill-group">
+        <div class="skill-group-name">Tools &amp; Platforms</div>
+        <div class="skill-tags">
+          <span class="tag">Rapid Prototyping</span>
+          <span class="tag">Microsoft Azure AI</span>
+          <span class="tag">Git</span>
+          <span class="tag">MS Office</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certifications -->
+    <div class="section">
+      <div class="section-label">Certifications</div>
+      <div class="cert-item">
+        <div class="cert-name">Microsoft Azure AI Fundamentals</div>
+        <div class="cert-issuer">Microsoft · Jul 2024 · ID C10243EC6D0E908E</div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-name">C Programming for Embedded Applications</div>
+        <div class="cert-issuer">LinkedIn Learning · Jul 2024</div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-name">First Aid &amp; CPR / BLS</div>
+        <div class="cert-issuer">Current certification</div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-name">General Construction Induction (White Card)</div>
+        <div class="cert-issuer">SafeWork NSW</div>
+      </div>
+    </div>
+
+    <!-- Awards -->
+    <div class="section">
+      <div class="section-label">Awards</div>
+      <div class="cert-item">
+        <div class="cert-name">UTS Dean's List</div>
+        <div class="cert-issuer">University of Technology Sydney · 2024</div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-name">Rookie of the Year</div>
+        <div class="cert-issuer">UTS Motorsports Autonomous · 2024</div>
+      </div>
+      <div class="cert-item">
+        <div class="cert-name">1st Place — Engineering Studies</div>
+        <div class="cert-issuer">Sydney Catholic Schools · 2023</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ══════════ MAIN CONTENT ══════════ -->
+  <main>
+
+    <!-- Profile -->
+    <div class="section">
+      <div class="section-label">Profile</div>
+      <p class="profile-text">
+        Penultimate-year Mechatronics Engineering student with hands-on experience in embedded sensing systems, analogue signal processing, and rapid hardware prototyping. Passionate about applying sensor fusion and AI to solve real-world infrastructure challenges. Proven ability to design, build, and iterate on multi-sensor hardware from PCB layout through to software integration — independently and as part of high-performing research teams.
+      </p>
+    </div>
+
+    <!-- Relevant Experience -->
+    <div class="section">
+      <div class="section-label">Relevant Experience</div>
+
+      <div class="exp-item" style="background:var(--accent-soft);border:1px solid #9ecfd0;border-radius:4px;padding:9px 11px;margin-bottom:13px;">
+        <div class="exp-header">
+          <div class="exp-title" style="font-size:9.5pt;">Product Development Engineer</div>
+          <div class="exp-dates">May 2025 – Present</div>
+        </div>
+        <div class="exp-org" style="font-size:8.5pt;">"I did a thing" · YouTube &nbsp;<span style="font-family:'JetBrains Mono',monospace;font-size:6.8pt;background:var(--accent);color:#fff;border-radius:3px;padding:1px 6px;font-weight:500;letter-spacing:0.5px;">5.6M+ SUBSCRIBERS</span></div>
+        <ul class="exp-bullets" style="margin-top:5px;">
+          <li>Sole engineer delivering 10+ functional prototypes for one of YouTube's largest engineering channels — averaging just 30 working hours per complete project cycle (ideation → sourcing → fabrication → iteration).</li>
+          <li>Designed and built a wearable flotation device with integrated sail mechanism; produced an autonomous CO₂-actuated projectile system — both requiring rigorous sensor and actuator integration.</li>
+          <li>Full engineering autonomy across every stage; all prototypes built to withstand hours of repeated takes during professional filming.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div class="exp-title">Embedded Systems Engineer</div>
+          <div class="exp-dates">Apr 2024 – Aug 2025</div>
+        </div>
+        <div class="exp-org">UTS Motorsports Autonomous</div>
+        <ul class="exp-bullets">
+          <li>Developed real-time embedded firmware in C for STM32 microcontrollers on an autonomous Formula SAE vehicle, including sensor data acquisition and actuation control.</li>
+          <li>Contributed to steer-by-wire system development; showcased technology at SXSW Sydney 2024 to industry professionals, receiving recognition as Rookie of the Year.</li>
+          <li>Collaborated within a multidisciplinary team of 30+ across mechanical, electrical, and software subsystems — analogous to the UTS TRU / nbn multi-stakeholder structure.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div class="exp-title">Casual Academic — Mechatronics Engineering</div>
+          <div class="exp-dates">Feb 2025 – Present</div>
+        </div>
+        <div class="exp-org">University of Technology Sydney</div>
+        <ul class="exp-bullets">
+          <li>Tutored undergraduate cohorts in 41099 Introduction to Mechatronics Engineering, reinforcing concepts in sensor systems, embedded programming, and control theory.</li>
+        </ul>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-header">
+          <div class="exp-title">Avionics Trainee</div>
+          <div class="exp-dates">Apr 2024 – Jan 2025</div>
+        </div>
+        <div class="exp-org">UTS Rocketry Team</div>
+        <ul class="exp-bullets">
+          <li>Prototyped avionics data loggers to capture and record in-flight sensor data (accelerometers, altimeters); attended workshops on flight data processing and analysis.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Key Technical Projects -->
+    <div class="section">
+      <div class="section-label">Key Technical Projects</div>
+
+      <div class="project-item">
+        <div class="project-header">
+          <div class="project-name">Multi-Sensor PCB — Step Tracker &amp; Sensing Platform</div>
+          <div class="project-grade">HD — Embedded Mechatronics Studio 2025</div>
+        </div>
+        <ul class="project-bullets">
+          <li>Designed a compact multi-sensor PCB in Altium Designer integrating: heart rate monitor, Time-of-Flight distance sensor (secondary daughter-board soldered perpendicularly), OLED display, STM32 microcontroller, USB-C power &amp; communication, and battery charging.</li>
+          <li>Implemented a 4th-order Butterworth low-pass filter using only C0G/NP0 components for clean analogue accelerometer signal conditioning — directly applicable to non-invasive sensing pipelines.</li>
+          <li>Designed for miniaturisation: 0402 SMD components, stencil-applied solder paste, hand-soldered; replaced recommended Arduino shield with integrated STM32 for enhanced performance.</li>
+        </ul>
+      </div>
+
+      <div class="project-item">
+        <div class="project-header">
+          <div class="project-name">6-DOF Robotic Arm Simulation &amp; Control Software</div>
+          <div class="project-grade">Distinction — Industrial Robotics 2025</div>
+        </div>
+        <ul class="project-bullets">
+          <li>Developed Python software to simulate and control three 6-DOF robotic arms, implementing forward/inverse kinematics and trajectory planning algorithms relevant to automated inspection pipelines.</li>
+        </ul>
+      </div>
+
+      <div class="project-item">
+        <div class="project-header">
+          <div class="project-name">Cart-Pendulum Balancing — Embedded Control System</div>
+          <div class="project-grade">HD — Intro to Mechatronics 2024</div>
+        </div>
+        <ul class="project-bullets">
+          <li>Implemented a PID control loop on a physical double-pendulum-on-cart system using stepper motors and sensor feedback; designed system CAD in Fusion 360 with a custom GUI for real-time parameter tuning.</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- Extracurricular -->
+    <div class="section">
+      <div class="section-label">Leadership &amp; Outreach</div>
+      <div class="exp-item" style="margin-bottom:5px;">
+        <div class="exp-header">
+          <div class="exp-title">Vice President</div>
+          <div class="exp-dates">Jun 2024 – Nov 2025</div>
+        </div>
+        <div class="exp-org">UTS Aerial Society</div>
+        <ul class="exp-bullets">
+          <li>Co-founded and governed a new UTS society, managing operations, membership, and event logistics alongside academic commitments.</li>
+        </ul>
+      </div>
+      <div class="exp-item" style="margin-bottom:0;">
+        <div class="exp-header">
+          <div class="exp-title">General Committee — STEM Outreach</div>
+          <div class="exp-dates">Mar – Oct 2024</div>
+        </div>
+        <div class="exp-org">Engineers Without Borders, UTS Chapter</div>
+        <ul class="exp-bullets">
+          <li>Organised and delivered hands-on engineering workshops to 400+ students across regional NSW (Wagga Wagga) and metropolitan schools; led outreach to Colyton High School independently.</li>
+        </ul>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+</body>
+</html>
